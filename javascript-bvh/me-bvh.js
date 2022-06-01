@@ -5,6 +5,12 @@
  * @author Nikola Lukic
  */
 
+ function deg2rad(degrees)
+ {
+   var pi = Math.PI;
+   return degrees * (pi/180);
+ }
+
 class MEBvhJoint {
 
   constructor(name, parent) {
@@ -64,21 +70,17 @@ class MEBvh {
       event.text().then((text) => {
 
         // console.log("Test parse file func -> ", text);
-
         var hierarchy = text.split("MOTION")[0];
         var motion = text.split("MOTION")[1];
 
         console.log("Test split MOTION hierarchy part-> ", hierarchy);
         console.log("Test split MOTION motion part -> ", motion);
-
-        console.log("Test scope -> ", this.myName);
+        // console.log("Test scope -> ", this.myName);
 
         this._parse_hierarchy(hierarchy);
         // self.parse_motion(motion)
 
-
       });
-      
 
     });
 
@@ -106,7 +108,8 @@ class MEBvh {
       if (instruction == "JOINT" || instruction == "ROOT") {
 
         if (instruction == "JOINT") {
-          parent = joint_stack[-1];
+            // -1 py -> last item 
+          parent = joint_stack[joint_stack.length-1];
         } else {
           parent = null;
         }
@@ -114,54 +117,184 @@ class MEBvh {
         var joint = new MEBvhJoint(words[1], parent);
 
         this.joints[joint.name] = joint;
-        if (parent != null) parent.add_child(joint);
+        if (parent != null) { parent.add_child(joint); }
         joint_stack.push(joint);
-        if (instruction == "ROOT") { this.root = joint }
+        if (instruction == "ROOT") { this.root = joint; }
 
     } else if (instruction == "CHANNELS") { 
-       
+       for (var j = 2;j < words.length;j++) {
+         joint_stack[joint_stack.length-1].channels.push(words[j]);
+       }
+    }  else if (instruction == "OFFSET") {
+        for (var j = 1;j < words.length;j++) {
+          joint_stack[joint_stack.length-1].offset[j - 1] = parseFloat(words[j]);
+        }
+    }  else if (instruction == "End") {
+        console.log("End ................")
+        var joint = new MEBvhJoint(joint_stack[joint_stack.length-1].name + "_end", joint_stack[joint_stack.length-1]);
+        joint_stack[joint_stack.length-1].add_child(joint);
+        joint_stack.push(joint);
+        this.joints[joint.name] = joint;
+    }  else if (instruction == "}") {
+        // array.pop() is equal
+        joint_stack.pop();
+    }
+  }
+
+  }
+
+  _add_pose_recursive(joint, offset, poses) {
+    var pose = joint.offset + offset;
+
+    poses.push(pose);
+
+    for (var c in joint.children) {
+      // ?????????? check
+      this._add_pose_recursive(c, pose, poses);
     }
 
-        // for i in range(2, len(words)):
-        //    joint_stack[-1].channels.append(words[i]);
-      }
-
-
-    
-
-    /*
-         lines = re.split('\\s*\\n+\\s*', text)
-
-        joint_stack = []
-
-        for line in lines:
-            words = re.split('\\s+', line)
-            instruction = words[0]
-
-            if instruction == "JOINT" or instruction == "ROOT":
-                parent = joint_stack[-1] if instruction == "JOINT" else None
-                joint = BvhJoint(words[1], parent)
-                self.joints[joint.name] = joint
-                if parent:
-                    parent.add_child(joint)
-                joint_stack.append(joint)
-                if instruction == "ROOT":
-                    self.root = joint
-            elif instruction == "CHANNELS":
-                for i in range(2, len(words)):
-                    joint_stack[-1].channels.append(words[i])
-            elif instruction == "OFFSET":
-                for i in range(1, len(words)):
-                    joint_stack[-1].offset[i - 1] = float(words[i])
-            elif instruction == "End":
-                joint = BvhJoint(joint_stack[-1].name + "_end", joint_stack[-1])
-                joint_stack[-1].add_child(joint)
-                joint_stack.append(joint)
-                self.joints[joint.name] = joint
-            elif instruction == '}':
-                joint_stack.pop()
-    */
   }
+
+
+  plot_hierarchy() {
+
+    // import matplotlib.pyplot as plt
+    // from mpl_toolkits.mplot3d import axes3d, Axes3D
+
+    var poses = [];
+    this._add_pose_recursive(this.root, np.zeros(3), poses);
+
+    pos = np.array(poses);
+
+    /* Draw staff DISABLED
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(pos[:, 0], pos[:, 2], pos[:, 1])
+    ax.set_xlim(-30, 30)
+    ax.set_ylim(-30, 30)
+    ax.set_zlim(-30, 30)
+    plt.show() */
+
+  }
+
+
+  parse_motion(text) {
+
+    var lines = text.split(/\s*\n+\s*/);
+
+    var frame = 0;
+    for (key in lines) {
+
+        var line = lines[key];
+        console.log("Test parse_motion LINE  -> ", line);
+
+            if (line == '') {
+                // equal
+                continue;
+            };
+
+            var words = line.split(/\s+/);
+
+            if (line.startswith("Frame Time:")) {
+                this.fps = round(1 / parseFloat(words[2]));
+                continue;
+            }
+            if (line.startswith("Frames:")) {
+                this.frames = parseInt(words[1]);
+                continue;
+            }
+
+            if (this.keyframes == null) {
+                console.log(">>>>>>>>words>>>>>" , words)
+                console.log(">>>>>>>>this.frames>>>>>" , this.frames)
+                // this.keyframes = np.empty((this.frames, len(words)), dtype=np.float32);
+            }
+
+            for (var angle_index in range(len(words))) {
+                console.log(">>>>>>>>angle_index>>>>>" , angle_index)
+                // this.keyframes[frame, angle_index] = parseFloat(words[angle_index]);
+            }
+
+            frame += 1;
+    }
+
+  }
+
+  _extract_rotation(frame_pose, index_offset, joint) {
+
+    local_rotation = np.zeros(3);
+
+    for (key in joint.channels) {
+
+        var channel = joint.channels[key];
+
+        if (channel.endswith("position")) {
+            continue;
+        }
+        if (channel == "Xrotation") {
+            local_rotation[0] = frame_pose[index_offset];
+        }
+        else if (channel == "Yrotation") {
+            local_rotation[1] = frame_pose[index_offset];
+        }
+        else if (channel == "Zrotation") {
+            local_rotation[2] = frame_pose[index_offset];
+        }
+        else {
+            console.warn("Unknown channel {channel}");
+            // raise Exception(f"Unknown channel {channel}");
+        }
+        index_offset += 1;
+    }
+
+    local_rotation = deg2rad(local_rotation);
+
+    M_rotation = [
+        [1., 0., 0.],
+        [0., 1., 0.],
+        [0., 0., 1.]
+    ];
+
+    // np.eye(3);
+    /*
+        [[1. 0. 0.]
+        [0. 1. 0.]
+        [0. 0. 1.]]
+    */
+
+    for (key in joint.channels) {
+
+        var channel = joint.channels[key];
+
+        if (channel.endswith("position")) {
+            continue;
+        }
+
+        if (channel == "Xrotation") {
+            // euler_rot = np.array([local_rotation[0], 0., 0.]);
+        }
+        else if (channel == "Yrotation") {
+            // euler_rot = np.array([0., local_rotation[1], 0.]);
+        }
+        else if (channel == "Zrotation") {
+            // euler_rot = np.array([0., 0., local_rotation[2]]);
+        } else {
+            console.warn("Unknown channel {channel}");
+        }
+
+        // var M_channel = euler2mat(*euler_rot)
+        // M_rotation = M_rotation.dot(M_channel)
+
+    // return M_rotation, index_offset
+    }
+
+  }
+
+
+  
+    /*
+
+    */
 
 }
 
