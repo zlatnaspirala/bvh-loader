@@ -162,7 +162,7 @@ class MEBvh {
     // from mpl_toolkits.mplot3d import axes3d, Axes3D
 
     var poses = [];
-    this._add_pose_recursive(this.root, np.zeros(3), poses);
+    this._add_pose_recursive(this.root, [0., 0., 0.], poses);
 
     pos = np.array(poses);
 
@@ -222,7 +222,7 @@ class MEBvh {
 
   _extract_rotation(frame_pose, index_offset, joint) {
 
-    local_rotation = np.zeros(3);
+    local_rotation = [0., 0., 0.];
 
     for (key in joint.channels) {
 
@@ -290,11 +290,148 @@ class MEBvh {
 
   }
 
+  _extract_position(joint, frame_pose, index_offset) {
+    offset_position = [0., 0., 0.];
+    for (var key in joint.channels) {
+        var channel = joint.channels[key];
 
-  
-    /*
+        if (channel.endswith("rotation")) {
+            continue;
+        }
 
+        if (channel == "Xposition") {
+            offset_position[0] = frame_pose[index_offset];
+        } else if (channel == "Yposition") {
+            offset_position[1] = frame_pose[index_offset];
+        } else if (channel == "Zposition") {
+            offset_position[2] = frame_pose[index_offset];
+        } else {
+            console.warn("Unknown channel {channel}");
+            // raise Exception(f"Unknown channel {channel}")
+        }
+        index_offset += 1;
+    }
+    return offset_position, index_offset
+  }
+
+  _recursive_apply_frame(joint, frame_pose, index_offset, p, r, M_parent, p_parent) {
+    if (joint.position_animated()) {
+        offset_position, index_offset = this._extract_position(joint, frame_pose, index_offset);
+    } else {
+        offset_position = [0., 0., 0.];
+    }
+
+    if (joint.channels.length == 0) {
+        joint_index = list(this.joints.values()).index(joint);
+        p[joint_index] = p_parent + M_parent.dot(joint.offset);
+        r[joint_index] = mat2euler(M_parent);
+        return index_offset;
+    }
+
+    if (joint.rotation_animated()) {
+        M_rotation, index_offset = this._extract_rotation(frame_pose, index_offset, joint);
+    } else {
+        M_rotation = [
+            [1., 0., 0.],
+            [0., 1., 0.],
+            [0., 0., 1.],
+        ];
+    }
+
+    var M = M_parent.dot(M_rotation);
+    position = p_parent + M_parent.dot(joint.offset) + offset_position;
+
+    rotation = rad2deg(mat2euler(M));
+    joint_index = list(this.joints.values()).index(joint)
+    p[joint_index] = position
+    r[joint_index] = rotation
+
+    for (var c in joint.children) {
+      index_offset = this._recursive_apply_frame(c, frame_pose, index_offset, p, r, M, position);
+    }
+
+    return index_offset;
+  }
+
+  frame_pose(frame) {
+    var p = np.empty((this.joints.length, 3));
+    var r = np.empty((this.joint.length, 3));
+    frame_pose = this.keyframes[frame];
+    
+    var M_parent =  [
+        [0., 0., 0.],
+        [0., 0., 0.],
+        [0., 0., 0.]
+    ];
+    // np.zeros((3, 3));
+
+    M_parent[0, 0] = 1;
+    M_parent[1, 1] = 1;
+    M_parent[2, 2] = 1;
+    this._recursive_apply_frame(this.root, frame_pose, 0, p, r, M_parent, [0.,0.,0.]);
+
+    return p, r;
+  }
+
+  all_frame_poses() {
+    p = np.empty((this.frames, this.joints.length, 3));
+    r = np.empty((this.frames, this.joints.length, 3));
+
+    for (frame in range(len(this.keyframes))) {
+        p[frame], r[frame] = this.frame_pose(frame);
+    }
+
+    return p, r;
+  }
+
+  _plot_pose(p, r, fig, ax) {
+    /* 
+    _plot_pose(p, r, fig=None, ax=None) {
+      import matplotlib.pyplot as plt
+      from mpl_toolkits.mplot3d import axes3d, Axes3D
+    if fig is None:
+        fig = plt.figure()
+    if ax is None:
+        ax = fig.add_subplot(111, projection='3d')
+
+    ax.cla()
+    ax.scatter(p[:, 0], p[:, 2], p[:, 1])
+    ax.set_xlim(-30, 30)
+    ax.set_ylim(-30, 30)
+    ax.set_zlim(-1, 59)
+
+    plt.draw()
+    plt.pause(0.001)
     */
+  }
+
+    // plot_frame(frame, fig=None, ax=None) {
+    plot_frame(frame, fig, ax) {
+        // ????
+        p, r = this.frame_pose(frame);
+        this._plot_pose(p, r, fig, ax);
+    }
+
+    joint_names() {
+        return this.joints.keys();
+    }
+
+    plot_all_frames() {
+        /*
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import axes3d, Axes3D
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        for i in range(self.frames) {
+            self.plot_frame(i, fig, ax);
+        } 
+        */
+    }
+
+    __repr__() {
+        // return f"BVH {len(self.joints.keys())} joints, {self.frames} frames";
+        return `BVH ${this.joints.keys().length} joints, ${this.frames} frames`;
+    }
 
 }
 
@@ -303,7 +440,6 @@ class MEBvh {
 var anim = new MEBvh();
 
 anim.parse_file();
-
 
 /* 
 class Bvh:
