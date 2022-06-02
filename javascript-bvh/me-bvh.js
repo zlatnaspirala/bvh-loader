@@ -5,8 +5,11 @@
  */
 
 function deg2rad(degrees) {
-  var pi = Math.PI;
-  return degrees * (pi / 180);
+  return degrees * (Math.PI / 180);
+}
+
+function byId(id) {
+  return document.getElementById(id);
 }
 
 class MEBvhJoint {
@@ -15,12 +18,6 @@ class MEBvhJoint {
     this.name = name;
     this.parent = parent;
 
-    // replace analog
-    /*
-        [[0. 0. 0.]
-        [0. 0. 0.]
-        [0. 0. 0.]]
-    */
     this.offset = [
       [0, 0, 0],
       [0, 0, 0],
@@ -63,33 +60,47 @@ class MEBvh {
 
   async parse_file() {
 
+    // var link ="example.bvh";
     var link = "https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-BVH-test/main/javascript-bvh/example.bvh";
-    var test = fetch(link).then(event => {
-    // var test = fetch("example.bvh").then(event => {
-      event.text().then(text => {
-        // console.log("Test parse file func -> ", text);
-        var hierarchy = text.split("MOTION")[0];
-        var motion = text.split("MOTION")[1];
-        // console.log("Test split MOTION hierarchy part-> ", hierarchy);
-        // console.log("Test split MOTION motion part -> ", motion);
-        // console.log("Test scope -> ", this.myName);
-        this._parse_hierarchy(hierarchy);
-        this.parse_motion(motion);
+
+    return new Promise((resolve, reject) => {
+      var test = fetch(link).then(event => {
+        event.text().then(text => {
+          var hierarchy = text.split("MOTION")[0];
+          var motion = text.split("MOTION")[1];
+          // console.log("Test split MOTION hierarchy part-> ", hierarchy);
+          // console.log("Test split MOTION motion part -> ", motion);
+          console.log("Test scope -> ", this.myName);
+
+          var newLog = document.createElement("div");
+          newLog.innerHTML += '<h2>Hierarchy</h2>';
+          newLog.innerHTML += '<p>' + hierarchy + '</p>';
+          byId('log').appendChild(newLog);
+
+          var newLog2 = document.createElement("span");
+          newLog2.innerHTML += '<h2>Motion</h2>';
+          newLog2.innerHTML += '<p class="paragraf" >' + motion + '</p>';
+          byId('log').appendChild(newLog2);
+
+          this._parse_hierarchy(hierarchy);
+          this.parse_motion(motion);
+
+          resolve();
+        });
       });
     });
   }
 
   _parse_hierarchy(text) {
-    // var lines = text.split(/[\n]+/g);
-    var lines = text.split(/\s*\n+\s*/);
 
-    console.log("Test _parse_hierarchy  -> ", lines);
+    var lines = text.split(/\s*\n+\s*/);
+    // console.log("Test _parse_hierarchy  -> ", lines);
 
     var joint_stack = [];
 
     for (var key in lines) {
       var line = lines[key];
-      console.log("Test _parse_hierarchy FIRST WORD  -> ", line);
+      // console.log("Test _parse_hierarchy line -> ", line);
 
       var words = line.split(/\s+/);
       var instruction = words[0];
@@ -125,7 +136,6 @@ class MEBvh {
           );
         }
       } else if (instruction == "End") {
-        console.log("End ................");
         var joint = new MEBvhJoint(
           joint_stack[joint_stack.length - 1].name + "_end",
           joint_stack[joint_stack.length - 1]
@@ -134,20 +144,29 @@ class MEBvh {
         joint_stack.push(joint);
         this.joints[joint.name] = joint;
       } else if (instruction == "}") {
-        // array.pop() is equal
         joint_stack.pop();
       }
     }
   }
 
   _add_pose_recursive(joint, offset, poses) {
+
+    var newLog1 = document.createElement("span");
+    newLog1.innerHTML += '<h2>add_pose_recursive</h2>';
+    newLog1.innerHTML += '<p class="paragraf" >' + joint + '</p>';
+    newLog1.innerHTML += '<p>joint.offset    : ' + joint.offset + '</p>';
+    newLog1.innerHTML += '<p>joint.children  : ' + joint.children + '</p>';
+    newLog1.innerHTML += '<p>Argument offset : ' + offset + '</p>';
+    byId('log').appendChild(newLog1);
+
+    console.log("_add_pose_recursive : ", joint);
+
     var pose = joint.offset + offset;
 
     poses.push(pose);
 
     for (var c in joint.children) {
-      // ?????????? check
-
+      // ?
       this._add_pose_recursive(joint.children[c], pose, poses);
     }
   }
@@ -174,19 +193,13 @@ class MEBvh {
   parse_motion(text) {
 
     var lines = text.split(/\s*\n+\s*/);
-
     var frame = 0;
     for (var key in lines) {
       var line = lines[key];
-      console.log("Test parse_motion LINE  -> ", line);
-      if (line == "") { // equal to py
-        continue;
-      }
-
+      // console.log("Test parse_motion LINE  -> ", line);
+      if (line == "") { continue; }
       var words = line.split(/\s+/);
-
       if (line.startsWith("Frame Time:")) {
-        console.log(">>>>>>>>Frame Time:>>>>>", words);
         this.fps =  Math.round(1 / parseFloat(words[2]));
         continue;
       }
@@ -194,18 +207,15 @@ class MEBvh {
         this.frames = parseInt(words[1]);
         continue;
       }
-
       if (this.keyframes == null) {
-        console.log(">>>>>>>>words>>>>>", words);
-        console.log(">>>>>>>>this.frames>>>>>", this.frames);
-        // this.keyframes = np.empty((this.frames, len(words)), dtype=np.float32);
+        // OK this is just costruction (define) with random values.
+        var localArr = Array.from(Array(this.frames), () => new Array(words.length));
+        this.keyframes = localArr;
       }
 
       for (var angle_index = 0; angle_index < words.length ;angle_index++) {
-        console.log(">>>>>>>>angle_index>>>>>", angle_index);
-        //  self.keyframes[frame, angle_index] = float(words[angle_index])
-        // ???????????????????????
-        // this.keyframes[frame, angle_index] = parseFloat(words[angle_index]);
+        this.keyframes[frame][angle_index] = parseFloat(words[angle_index]);
+        // console.log(" localArr >>>>>>>>>>>>>", this.keyframes[0]);
       }
 
       frame += 1;
@@ -280,7 +290,7 @@ class MEBvh {
   }
 
   _extract_position(joint, frame_pose, index_offset) {
-    offset_position = [0, 0, 0];
+    var offset_position = [0, 0, 0];
     for (var key in joint.channels) {
       var channel = joint.channels[key];
 
@@ -313,14 +323,12 @@ class MEBvh {
     p_parent
   ) {
     if (joint.position_animated()) {
-      offset_position,
-        (index_offset = this._extract_position(
-          joint,
-          frame_pose,
-          index_offset
-        ));
+      var local = this._extract_position(joint, frame_pose, index_offset );
+      var offset_position = local[0],
+          index_offset = local[1];
+
     } else {
-      offset_position = [0, 0, 0];
+      var offset_position = [0, 0, 0];
     }
 
     if (joint.channels.length == 0) {
@@ -331,14 +339,11 @@ class MEBvh {
     }
 
     if (joint.rotation_animated()) {
-      M_rotation,
-        (index_offset = this._extract_rotation(
-          frame_pose,
-          index_offset,
-          joint
-        ));
+      var local2 = this._extract_rotation(frame_pose, index_offset, joint);
+      var M_rotation = local2[0];
+      var index_offset = local2[1];
     } else {
-      M_rotation = [
+      var M_rotation = [
         [1, 0, 0],
         [0, 1, 0],
         [0, 0, 1],
@@ -369,9 +374,13 @@ class MEBvh {
   }
 
   frame_pose(frame) {
-    var p = np.empty((this.joints.length, 3));
-    var r = np.empty((this.joint.length, 3));
-    frame_pose = this.keyframes[frame];
+
+    var p = Array.from(Array(this.joints.length), () => new Array(3));
+    var r = Array.from(Array(this.joints.length), () => new Array(3));
+    // var p = np.empty((this.joints.length, 3));
+    // var r = np.empty((this.joints.length, 3));
+
+    var frame_pose = this.keyframes[frame];
 
     var M_parent = [
       [0, 0, 0],
@@ -461,9 +470,17 @@ class MEBvh {
 
 var anim = new MEBvh();
 
-anim.parse_file();
+anim.parse_file().then(()=>{
 
-anim.plot_hierarchy()
+  console.info(" plot_hierarchy call 0 no function ")
+  anim.plot_hierarchy();
+
+  var r = anim.frame_pose(0);
+  console.log("FINAL R FROM anim.frame_pose(0); .____________" ,r)
+
+});
+
+
 
 // extract single frame pose: axis0=joint, axis1=positionXYZ/rotationXYZ
-p, r = anim.frame_pose(0);
+// p, r = anim.frame_pose(0);

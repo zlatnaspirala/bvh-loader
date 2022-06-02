@@ -1,4 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>BVH loader for matrix-Engine</title>
+  <meta charset="utf-8">
+  <!--link rel="manifest" href="manifest.web"-->
+  <meta name="robots" content="all" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,minimal-ui">
+  <meta name="theme-color" content="#000000">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="Description" content="MAximumroulette.com zlatnaspirala@gmil.com Nikola Lukic">
+  <meta http-equiv="Cache-control" content="public">
+  <meta name="msapplication-navbutton-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script src="./me-bvh.js"></script>
+  <style>
 
-<script src="./me-bvh.js"></script>
+    /* Scroll bars */
+    /* width */
+    ::-webkit-scrollbar {
+      width: 20px;
+    }
 
-<h1>TEST BVH JS </h1>
+    /* Track */
+    ::-webkit-scrollbar-track {
+      box-shadow: inset 0 0 5px rgb(238, 88, 1);
+      border-radius: 6px;
+    }
+
+    /* Handle */
+    ::-webkit-scrollbar-thumb {
+      background: silver;
+      border-radius: 10px;
+    }
+
+    /* Handle on hover */
+    ::-webkit-scrollbar-thumb:hover {
+      background: orangered;
+    }
+
+    body {
+      background: black;
+      color: lime;
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+    }
+
+    div {
+      background: rgb(40, 40, 40);
+      color: rgb(255, 255, 255);
+      text-shadow: 0px 1px 38px rgb(255 0 0);
+    }
+
+    span {
+      text-shadow: 0px 1px 38px rgb(15, 255, 7);
+    }
+
+    #log {
+      width: 80%;
+      height: calc(90vh);
+      overflow: auto;
+    }
+
+    .paragraf {
+      height:400px !important;
+      overflow: scroll;
+    }
+  </style>
+
+  </head>
+  <body>
+    <h1>BVH Loader for Matrix-Engine</h1>
+    <h2>Get final logs similar to the bvh.py origin file.</h2>
+    <div id="log"></div>
+ </body>
+</html>
