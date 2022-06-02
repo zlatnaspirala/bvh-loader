@@ -387,11 +387,11 @@ class MEBvh {
       [0, 0, 0],
       [0, 0, 0],
     ];
-    // np.zeros((3, 3));
 
-    M_parent[(0, 0)] = 1;
-    M_parent[(1, 1)] = 1;
-    M_parent[(2, 2)] = 1;
+    M_parent[0][0] = 1;
+    M_parent[1][1] = 1;
+    M_parent[2][2] = 1;
+
     this._recursive_apply_frame(
       this.root,
       frame_pose,
