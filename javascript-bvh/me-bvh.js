@@ -8,8 +8,29 @@ function deg2rad(degrees) {
   return degrees * (Math.PI / 180);
 }
 
+function rad2deg(radians)
+{
+  return radians * (180 / Math.PI);
+}
+
 function byId(id) {
   return document.getElementById(id);
+}
+
+function multiply(a, b) {
+  var aNumRows = a.length, aNumCols = a[0].length,
+      bNumRows = b.length, bNumCols = b[0].length,
+      m = new Array(aNumRows);
+  for (var r = 0; r < aNumRows; ++r) {
+    m[r] = new Array(bNumCols);
+    for (var c = 0; c < bNumCols; ++c) {
+      m[r][c] = 0;
+      for (var i = 0; i < aNumCols; ++i) {
+        m[r][c] += a[r][i] * b[i][c];
+      }
+    }
+  }
+  return m;
 }
 
 class MEBvhJoint {
@@ -350,8 +371,13 @@ class MEBvh {
       ];
     }
 
-    var M = M_parent.dot(M_rotation);
-    position = p_parent + M_parent.dot(joint.offset) + offset_position;
+    // multiply
+    // var M = M_parent.dot(M_rotation);
+
+    var M = multiply(M_parent, M_rotation);
+
+
+    var position = p_parent + multiply(M_parent, joint.offset) + offset_position;
 
     rotation = rad2deg(mat2euler(M));
     joint_index = list(this.joints.values()).index(joint);
