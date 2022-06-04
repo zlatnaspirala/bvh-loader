@@ -8,8 +8,7 @@ function deg2rad(degrees) {
   return degrees * (Math.PI / 180);
 }
 
-function rad2deg(radians)
-{
+function rad2deg(radians) {
   return radians * (180 / Math.PI);
 }
 
@@ -31,6 +30,50 @@ function multiply(a, b) {
     }
   }
   return m;
+}
+
+function mat2euler(M, rad2deg_flag) {
+  var pitch_1,
+      pitch_2,
+      roll_1,
+      roll_2,
+      yaw_1,
+      yaw_2,
+      pitch,
+      roll,
+      yaw;
+
+  if (M[2][0] != 1 & M[2][0] != -1) {
+      pitch_1 = -1*Math.asin(M[2][0]);
+      pitch_2 = Math.PI - pitch_1;
+      roll_1 = Math.atan2( M[2][1] /  Math.cos(pitch_1), M[2][2] /  Math.cos(pitch_1) );
+      roll_2 = Math.atan2( M[2][1] /  Math.cos(pitch_2), M[2][2] / Math.cos(pitch_2) );
+      yaw_1 = Math.atan2( M[1][0] /  Math.cos(pitch_1), M[0][0] /  Math.cos(pitch_1) );
+      yaw_2 = Math.atan2( M[1][0] /  Math.cos(pitch_2), M[0][0] /  Math.cos(pitch_2) );
+      pitch = pitch_1;
+      roll = roll_1;
+      yaw = yaw_1;
+  } else {
+      yaw = 0;
+      if (M[2][0] == -1) {
+        pitch = Math.PI/2;
+        roll = yaw + atan2(M[0][1],M[0][2]);
+      } else {
+        pitch = -Math.PI/2;
+        roll = -1*yaw + atan2(-1*M[0][1],-1*M[0][2]);
+      }
+  }
+
+  if (typeof rad2deg_flag !== undefined) {
+    // convert from radians to degrees
+    roll = roll*180/ Math.PI;
+    pitch = pitch*180/ Math.PI;
+    yaw = yaw*180/ Math.PI;
+  }
+
+  rez = [roll , pitch , yaw];
+  console.log("Rez of => ", rez);
+  return rez;
 }
 
 class MEBvhJoint {
@@ -379,7 +422,9 @@ class MEBvh {
 
     var position = p_parent + multiply(M_parent, joint.offset) + offset_position;
 
-    rotation = rad2deg(mat2euler(M));
+    // rotation = rad2deg(mat2euler(M));
+    var rotation = mat2euler(M, "rad2deg");
+
     joint_index = list(this.joints.values()).index(joint);
     p[joint_index] = position;
     r[joint_index] = rotation;
