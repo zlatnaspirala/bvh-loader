@@ -4,6 +4,10 @@
  * @author Nikola Lukic
  */
 
+function list(iterable) {
+  return [...iterable];
+}
+
 function deg2rad(degrees) {
   return degrees * (Math.PI / 180);
 }
@@ -128,7 +132,7 @@ class MEBvh {
     var link = "https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-BVH-test/main/javascript-bvh/example.bvh";
 
     return new Promise((resolve, reject) => {
-      var test = fetch(link).then(event => {
+      fetch(link).then(event => {
         event.text().then(text => {
           var hierarchy = text.split("MOTION")[0];
           var motion = text.split("MOTION")[1];
@@ -426,6 +430,7 @@ class MEBvh {
     var rotation = mat2euler(M, "rad2deg");
 
     joint_index = list(this.joints.values()).index(joint);
+
     p[joint_index] = position;
     r[joint_index] = rotation;
 
@@ -543,15 +548,13 @@ var anim = new MEBvh();
 
 anim.parse_file().then(()=>{
 
-  console.info(" plot_hierarchy call 0 no function ")
+  console.info("plot_hierarchy no function")
   anim.plot_hierarchy();
 
   var r = anim.frame_pose(0);
   console.log("FINAL R FROM anim.frame_pose(0); .____________" ,r)
 
 });
-
-
 
 // extract single frame pose: axis0=joint, axis1=positionXYZ/rotationXYZ
 // p, r = anim.frame_pose(0);
