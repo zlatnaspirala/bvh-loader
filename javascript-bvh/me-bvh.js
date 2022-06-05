@@ -110,7 +110,18 @@ class MEBvhJoint {
   }
 
   rotation_animated() {
-    // ???????????
+    // ??????????? true or false 
+    console.log(" self.channels ", this.channels)
+    var detFlag = false;
+    for (const item in this.channels) {
+          console.log(this.channels[item], "  index => " )
+          console.log(this.channels[item].endsWith("rotation"), "  rotation " )
+          if (this.channels[item].endsWith("rotation") == true) {
+            detFlag = true;
+          }
+    }
+    
+    return detFlag;
     // return any([x.endswith('rotation') for x in self.channels])
   }
 }
@@ -291,12 +302,13 @@ class MEBvh {
   }
 
   _extract_rotation(frame_pose, index_offset, joint) {
-    local_rotation = [0, 0, 0];
+    var local_rotation = [0, 0, 0],
+        M_rotation;
 
-    for (key in joint.channels) {
+    for (var key in joint.channels) {
       var channel = joint.channels[key];
 
-      if (channel.endswith("position")) {
+      if (channel.endsWith("position")) {
         continue;
       }
       if (channel == "Xrotation") {
@@ -330,12 +342,14 @@ class MEBvh {
     for (key in joint.channels) {
       var channel = joint.channels[key];
 
-      if (channel.endswith("position")) {
+      if (channel.endsWith("position")) {
         continue;
       }
 
+      var euler_rot;
       if (channel == "Xrotation") {
         // ?????????????????
+        console.warn("local_rotation " + local_rotation);
         // euler_rot = np.array([local_rotation[0], 0., 0.]);
       } else if (channel == "Yrotation") {
         // ?????????????????
@@ -353,7 +367,7 @@ class MEBvh {
       // M_rotation = M_rotation.dot(M_channel)
 
       // return M_rotation, index_offset
-      // return [M_rotation, index_offset]
+      return [M_rotation, index_offset];
     }
   }
 
@@ -378,7 +392,7 @@ class MEBvh {
       }
       index_offset += 1;
     }
-    return offset_position, index_offset;
+    return [offset_position, index_offset];
   }
 
   _recursive_apply_frame(
@@ -390,6 +404,7 @@ class MEBvh {
     M_parent,
     p_parent
   ) {
+    var joint_index;
     if (joint.position_animated()) {
       var local = this._extract_position(joint, frame_pose, index_offset );
       var offset_position = local[0],
@@ -400,8 +415,21 @@ class MEBvh {
     }
 
     if (joint.channels.length == 0) {
-      joint_index = list(this.joints.values()).index(joint);
-      p[joint_index] = p_parent + M_parent.dot(joint.offset);
+
+      var local2 = 0;
+      for (var item in this.joints) {
+        
+        if (joint.name == item) {
+          console.log(">>>>(joint.channels.length == 0) >GOOD>>", item , " local2 .>>>>>" , local2)
+          joint_index = local2;
+        }
+        local2++;
+      }
+
+      // joint_index = list(this.joints.values()).index(joint); ORI
+
+      p[joint_index] = p_parent + multiply(M_parent,joint.offset);
+
       r[joint_index] = mat2euler(M_parent);
       return index_offset;
     }
@@ -409,7 +437,7 @@ class MEBvh {
     if (joint.rotation_animated()) {
       var local2 = this._extract_rotation(frame_pose, index_offset, joint);
       var M_rotation = local2[0];
-      var index_offset = local2[1];
+      index_offset = local2[1];
     } else {
       var M_rotation = [
         [1, 0, 0],
@@ -423,20 +451,40 @@ class MEBvh {
 
     var M = multiply(M_parent, M_rotation);
 
-
     var position = p_parent + multiply(M_parent, joint.offset) + offset_position;
 
     // rotation = rad2deg(mat2euler(M));
     var rotation = mat2euler(M, "rad2deg");
 
-    joint_index = list(this.joints.values()).index(joint);
+
+    ///////////////
+    // just find by id 
+    
+    // joint_index = list(this.joints.values()).index(joint); ORIGINAL
+
+    
+
+    var local = 0;
+    for (const item in this.joints) {
+       if (joint.name == item) {
+          console.log(item, "  index => " , local);
+          joint_index = local;
+       }
+        local++;
+
+    }
+
+    console.log(joint_index + "<<<<<<<<<<<<<joint_index<<<<<<<<<<<<<")
+
+    /////////////
+
 
     p[joint_index] = position;
     r[joint_index] = rotation;
 
     for (var c in joint.children) {
       index_offset = this._recursive_apply_frame(
-        c,
+        joint.children[c],
         frame_pose,
         index_offset,
         p,
@@ -478,18 +526,29 @@ class MEBvh {
       [0, 0, 0]
     );
 
-    return p, r;
+    return [p, r];
   }
 
   all_frame_poses() {
-    p = np.empty((this.frames, this.joints.length, 3));
-    r = np.empty((this.frames, this.joints.length, 3));
+    console.log("ALL FRAME POSES" , this.joints.length)
+    //  Array.from(Array(this.joints.length), () => new Array(3));
+    // what is -> p len ,  >>>>>>> 75
+    // what is -> p len of [o] ,  >>>>>>> 38
+    // what is -> p len of [o][0] ,  >>>>>>> 3
 
-    for (frame in range(len(this.keyframes))) {
-      p[frame], (r[frame] = this.frame_pose(frame));
+    // p = np.empty((this.frames, this.joints.length, 3));
+    var p = Array.from({length:this.frames}, () => Array.from({length:this.joints.length}, () => [0, 0, 0]));
+    // r = np.empty((this.frames, this.joints.length, 3));
+    var r = Array.from({length:this.frames}, () => Array.from({length:this.joints.length}, () => [0, 0, 0]));
+
+    for (var frame = 0; frame < this.keyframes.length;frame++) {
+      console.log(local3[0] + "<<<<<<<<<<local3[0]<<")
+      var local3 = this.frame_pose(frame);
+      p[frame] = local3[0];
+      r[frame] = local3[1];
     }
 
-    return p, r;
+    return [p, r];
   }
 
   _plot_pose(p, r, fig, ax) {
