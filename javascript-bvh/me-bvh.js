@@ -4,12 +4,19 @@
  * @author Nikola Lukic
  */
 
+// unused
 function list(iterable) {
   return [...iterable];
 }
 
 function deg2rad(degrees) {
   return degrees * (Math.PI / 180);
+}
+
+function npdeg2rad(degrees) {
+  return [degrees[0] * (Math.PI / 180),
+          degrees[1] * (Math.PI / 180),
+          degrees[2] * (Math.PI / 180)];
 }
 
 function rad2deg(radians) {
@@ -22,13 +29,13 @@ function byId(id) {
 
 function multiply(a, b) {
   var aNumRows = a.length, aNumCols = a[0].length,
-      bNumRows = b.length, bNumCols = b[0].length,
-      m = new Array(aNumRows);
-  for (var r = 0; r < aNumRows; ++r) {
+    bNumRows = b.length, bNumCols = b[0].length,
+    m = new Array(aNumRows);
+  for(var r = 0;r < aNumRows;++r) {
     m[r] = new Array(bNumCols);
-    for (var c = 0; c < bNumCols; ++c) {
+    for(var c = 0;c < bNumCols;++c) {
       m[r][c] = 0;
-      for (var i = 0; i < aNumCols; ++i) {
+      for(var i = 0;i < aNumCols;++i) {
         m[r][c] += a[r][i] * b[i][c];
       }
     }
@@ -36,47 +43,46 @@ function multiply(a, b) {
   return m;
 }
 
+/**
+ * @description
+ * How to calculate the angle from rotation matrix.
+ */
 function mat2euler(M, rad2deg_flag) {
-  var pitch_1,
-      pitch_2,
-      roll_1,
-      roll_2,
-      yaw_1,
-      yaw_2,
-      pitch,
-      roll,
-      yaw;
+  var pitch_1, pitch_2,
+    roll_1, roll_2,
+    yaw_1, yaw_2,
+    pitch, roll, yaw;
 
-  if (M[2][0] != 1 & M[2][0] != -1) {
-      pitch_1 = -1*Math.asin(M[2][0]);
-      pitch_2 = Math.PI - pitch_1;
-      roll_1 = Math.atan2( M[2][1] /  Math.cos(pitch_1), M[2][2] /  Math.cos(pitch_1) );
-      roll_2 = Math.atan2( M[2][1] /  Math.cos(pitch_2), M[2][2] / Math.cos(pitch_2) );
-      yaw_1 = Math.atan2( M[1][0] /  Math.cos(pitch_1), M[0][0] /  Math.cos(pitch_1) );
-      yaw_2 = Math.atan2( M[1][0] /  Math.cos(pitch_2), M[0][0] /  Math.cos(pitch_2) );
-      pitch = pitch_1;
-      roll = roll_1;
-      yaw = yaw_1;
+  if(M[2][0] != 1 & M[2][0] != -1) {
+    pitch_1 = -1 * Math.asin(M[2][0]);
+    pitch_2 = Math.PI - pitch_1;
+    roll_1 = Math.atan2(M[2][1] / Math.cos(pitch_1), M[2][2] / Math.cos(pitch_1));
+    roll_2 = Math.atan2(M[2][1] / Math.cos(pitch_2), M[2][2] / Math.cos(pitch_2));
+    yaw_1 = Math.atan2(M[1][0] / Math.cos(pitch_1), M[0][0] / Math.cos(pitch_1));
+    yaw_2 = Math.atan2(M[1][0] / Math.cos(pitch_2), M[0][0] / Math.cos(pitch_2));
+    pitch = pitch_1;
+    roll = roll_1;
+    yaw = yaw_1;
   } else {
-      yaw = 0;
-      if (M[2][0] == -1) {
-        pitch = Math.PI/2;
-        roll = yaw + atan2(M[0][1],M[0][2]);
-      } else {
-        pitch = -Math.PI/2;
-        roll = -1*yaw + atan2(-1*M[0][1],-1*M[0][2]);
-      }
+    yaw = 0;
+    if(M[2][0] == -1) {
+      pitch = Math.PI / 2;
+      roll = yaw + atan2(M[0][1], M[0][2]);
+    } else {
+      pitch = -Math.PI / 2;
+      roll = -1 * yaw + atan2(-1 * M[0][1], -1 * M[0][2]);
+    }
   }
 
-  if (typeof rad2deg_flag !== undefined) {
+  if(typeof rad2deg_flag !== undefined) {
     // convert from radians to degrees
-    roll = roll*180/ Math.PI;
-    pitch = pitch*180/ Math.PI;
-    yaw = yaw*180/ Math.PI;
+    roll = roll * 180 / Math.PI;
+    pitch = pitch * 180 / Math.PI;
+    yaw = yaw * 180 / Math.PI;
   }
 
-  rez = [roll , pitch , yaw];
-  console.log("Rez of => ", rez);
+  rez = [roll, pitch, yaw];
+  // console.log("Rez of => ", rez);
   return rez;
 }
 
@@ -107,12 +113,11 @@ class MEBvhJoint {
   position_animated() {
     // true or false
     var detFlag = false;
-    for (const item in this.channels) {
-          console.log(this.channels[item], "  position index => " )
-          console.log(this.channels[item].endsWith("position"), "  position " )
-          if (this.channels[item].endsWith("position") == true) {
-            detFlag = true;
-          }
+    for(const item in this.channels) {
+      // console.log(this.channels[item].endsWith("position"), "  position " )
+      if(this.channels[item].endsWith("position") == true) {
+        detFlag = true;
+      }
     }
     return detFlag;
   }
@@ -120,12 +125,11 @@ class MEBvhJoint {
   rotation_animated() {
     // console.log(" self.channels ", this.channels)
     var detFlag = false;
-    for (const item in this.channels) {
-          console.log(this.channels[item], " rotation  index => " )
-          console.log(this.channels[item].endsWith("rotation"), "  rotation " )
-          if (this.channels[item].endsWith("rotation") == true) {
-            detFlag = true;
-          }
+    for(const item in this.channels) {
+      // console.log(this.channels[item].endsWith("rotation"), "  rotation " )
+      if(this.channels[item].endsWith("rotation") == true) {
+        detFlag = true;
+      }
     }
     return detFlag;
   }
@@ -134,7 +138,7 @@ class MEBvhJoint {
 class MEBvh {
   constructor() {
     this.joints = {};
-    this.root = null; // python None -> JS null
+    this.root = null;
     this.keyframes = null;
     this.frames = 0;
     this.fps = 0;
@@ -182,7 +186,7 @@ class MEBvh {
 
     var joint_stack = [];
 
-    for (var key in lines) {
+    for(var key in lines) {
       var line = lines[key];
       // console.log("Test _parse_hierarchy line -> ", line);
 
@@ -191,8 +195,8 @@ class MEBvh {
 
       var parent = null;
 
-      if (instruction == "JOINT" || instruction == "ROOT") {
-        if (instruction == "JOINT") {
+      if(instruction == "JOINT" || instruction == "ROOT") {
+        if(instruction == "JOINT") {
           // -1 py -> last item
           parent = joint_stack[joint_stack.length - 1];
         } else {
@@ -202,24 +206,24 @@ class MEBvh {
         var joint = new MEBvhJoint(words[1], parent);
 
         this.joints[joint.name] = joint;
-        if (parent != null) {
+        if(parent != null) {
           parent.add_child(joint);
         }
         joint_stack.push(joint);
-        if (instruction == "ROOT") {
+        if(instruction == "ROOT") {
           this.root = joint;
         }
-      } else if (instruction == "CHANNELS") {
-        for (var j = 2; j < words.length; j++) {
+      } else if(instruction == "CHANNELS") {
+        for(var j = 2;j < words.length;j++) {
           joint_stack[joint_stack.length - 1].channels.push(words[j]);
         }
-      } else if (instruction == "OFFSET") {
-        for (var j = 1; j < words.length; j++) {
+      } else if(instruction == "OFFSET") {
+        for(var j = 1;j < words.length;j++) {
           joint_stack[joint_stack.length - 1].offset[j - 1] = parseFloat(
             words[j]
           );
         }
-      } else if (instruction == "End") {
+      } else if(instruction == "End") {
         var joint = new MEBvhJoint(
           joint_stack[joint_stack.length - 1].name + "_end",
           joint_stack[joint_stack.length - 1]
@@ -227,7 +231,7 @@ class MEBvh {
         joint_stack[joint_stack.length - 1].add_child(joint);
         joint_stack.push(joint);
         this.joints[joint.name] = joint;
-      } else if (instruction == "}") {
+      } else if(instruction == "}") {
         joint_stack.pop();
       }
     }
@@ -240,17 +244,19 @@ class MEBvh {
     newLog1.innerHTML += '<p class="paragraf" >' + joint + '</p>';
     newLog1.innerHTML += '<p>joint.offset    : ' + joint.offset + '</p>';
     newLog1.innerHTML += '<p>joint.children  : ' + joint.children + '</p>';
+
+    for(var lKey in joint.children[0]) {
+      newLog1.innerHTML += '<p>joint.children[0] ' + lKey + ' -> ' + joint.children[0][lKey] + '</p>';
+    }
+
     newLog1.innerHTML += '<p>Argument offset : ' + offset + '</p>';
     byId('log').appendChild(newLog1);
-
     console.log("_add_pose_recursive : ", joint);
 
     var pose = joint.offset + offset;
-
     poses.push(pose);
 
-    for (var c in joint.children) {
-      // ?
+    for(var c in joint.children) {
       this._add_pose_recursive(joint.children[c], pose, poses);
     }
   }
@@ -278,26 +284,26 @@ class MEBvh {
 
     var lines = text.split(/\s*\n+\s*/);
     var frame = 0;
-    for (var key in lines) {
+    for(var key in lines) {
       var line = lines[key];
       // console.log("Test parse_motion LINE  -> ", line);
-      if (line == "") { continue; }
+      if(line == "") {continue;}
       var words = line.split(/\s+/);
-      if (line.startsWith("Frame Time:")) {
-        this.fps =  Math.round(1 / parseFloat(words[2]));
+      if(line.startsWith("Frame Time:")) {
+        this.fps = Math.round(1 / parseFloat(words[2]));
         continue;
       }
-      if (line.startsWith("Frames:")) {
+      if(line.startsWith("Frames:")) {
         this.frames = parseInt(words[1]);
         continue;
       }
-      if (this.keyframes == null) {
+      if(this.keyframes == null) {
         // OK this is just costruction (define) with random values.
         var localArr = Array.from(Array(this.frames), () => new Array(words.length));
         this.keyframes = localArr;
       }
 
-      for (var angle_index = 0; angle_index < words.length ;angle_index++) {
+      for(var angle_index = 0;angle_index < words.length;angle_index++) {
         this.keyframes[frame][angle_index] = parseFloat(words[angle_index]);
         // console.log(" localArr >>>>>>>>>>>>>", this.keyframes[0]);
       }
@@ -308,19 +314,19 @@ class MEBvh {
 
   _extract_rotation(frame_pose, index_offset, joint) {
     var local_rotation = [0, 0, 0],
-        M_rotation;
+      M_rotation;
 
-    for (var key in joint.channels) {
+    for(var key in joint.channels) {
       var channel = joint.channels[key];
 
-      if (channel.endsWith("position")) {
+      if(channel.endsWith("position")) {
         continue;
       }
-      if (channel == "Xrotation") {
+      if(channel == "Xrotation") {
         local_rotation[0] = frame_pose[index_offset];
-      } else if (channel == "Yrotation") {
+      } else if(channel == "Yrotation") {
         local_rotation[1] = frame_pose[index_offset];
-      } else if (channel == "Zrotation") {
+      } else if(channel == "Zrotation") {
         local_rotation[2] = frame_pose[index_offset];
       } else {
         console.warn("Unknown channel {channel}");
@@ -329,7 +335,7 @@ class MEBvh {
       index_offset += 1;
     }
 
-    local_rotation = deg2rad(local_rotation);
+    local_rotation = npdeg2rad(local_rotation);
 
     M_rotation = [
       [1, 0, 0],
@@ -344,27 +350,26 @@ class MEBvh {
             [0. 0. 1.]]
         */
 
-    for (key in joint.channels) {
+    for(key in joint.channels) {
       var channel = joint.channels[key];
 
-      if (channel.endsWith("position")) {
+      if(channel.endsWith("position")) {
         continue;
       }
 
       var euler_rot;
-      if (channel == "Xrotation") {
-        // ?????????????????
+      if(channel == "Xrotation") {
         console.warn("local_rotation " + local_rotation);
-        // euler_rot = np.array([local_rotation[0], 0., 0.]);
-      } else if (channel == "Yrotation") {
-        // ?????????????????
-        // euler_rot = np.array([0., local_rotation[1], 0.]);
-      } else if (channel == "Zrotation") {
-        // ?????????????????
-        // euler_rot = np.array([0., 0., local_rotation[2]]);
+        euler_rot = [local_rotation[0], 0., 0.];
+      } else if(channel == "Yrotation") {
+        euler_rot = [0., local_rotation[1], 0.];
+      } else if(channel == "Zrotation") {
+        euler_rot = [0., 0., local_rotation[2]];
       } else {
         console.warn("Unknown channel {channel}");
       }
+
+      console.log(">>>>>>euler_rot>>>>>>>", euler_rot);
 
       // ?????????????????
       // var M_channel = euler2mat(*euler_rot)
@@ -378,18 +383,18 @@ class MEBvh {
 
   _extract_position(joint, frame_pose, index_offset) {
     var offset_position = [0, 0, 0];
-    for (var key in joint.channels) {
+    for(var key in joint.channels) {
       var channel = joint.channels[key];
 
-      if (channel.endsWith("rotation")) {
+      if(channel.endsWith("rotation")) {
         continue;
       }
 
-      if (channel == "Xposition") {
+      if(channel == "Xposition") {
         offset_position[0] = frame_pose[index_offset];
-      } else if (channel == "Yposition") {
+      } else if(channel == "Yposition") {
         offset_position[1] = frame_pose[index_offset];
-      } else if (channel == "Zposition") {
+      } else if(channel == "Zposition") {
         offset_position[2] = frame_pose[index_offset];
       } else {
         console.warn("Unknown channel {channel}");
@@ -410,22 +415,22 @@ class MEBvh {
     p_parent
   ) {
     var joint_index;
-    if (joint.position_animated()) {
-      var local = this._extract_position(joint, frame_pose, index_offset );
+    if(joint.position_animated()) {
+      var local = this._extract_position(joint, frame_pose, index_offset);
       var offset_position = local[0],
-          index_offset = local[1];
+        index_offset = local[1];
 
     } else {
       var offset_position = [0, 0, 0];
     }
 
-    if (joint.channels.length == 0) {
+    if(joint.channels.length == 0) {
 
       var local2 = 0;
-      for (var item in this.joints) {
-        
-        if (joint.name == item) {
-          console.log(">>>>(joint.channels.length == 0) >GOOD>>", item , " local2 .>>>>>" , local2)
+      for(var item in this.joints) {
+
+        if(joint.name == item) {
+          console.log(">>>>(joint.channels.length == 0) >GOOD>>", item, " local2 .>>>>>", local2)
           joint_index = local2;
         }
         local2++;
@@ -433,13 +438,13 @@ class MEBvh {
 
       // joint_index = list(this.joints.values()).index(joint); ORI
 
-      p[joint_index] = p_parent + multiply(M_parent,joint.offset);
+      p[joint_index] = p_parent + multiply(M_parent, joint.offset);
 
       r[joint_index] = mat2euler(M_parent);
       return index_offset;
     }
 
-    if (joint.rotation_animated()) {
+    if(joint.rotation_animated()) {
       var local2 = this._extract_rotation(frame_pose, index_offset, joint);
       var M_rotation = local2[0];
       index_offset = local2[1];
@@ -461,33 +466,23 @@ class MEBvh {
     // rotation = rad2deg(mat2euler(M));
     var rotation = mat2euler(M, "rad2deg");
 
-
-    ///////////////
-    // just find by id 
-    
+    //////////////
+    // just find by id
     // joint_index = list(this.joints.values()).index(joint); ORIGINAL
-
-    
-
     var local = 0;
-    for (const item in this.joints) {
-       if (joint.name == item) {
-          console.log(item, "  index => " , local);
-          joint_index = local;
-       }
-        local++;
-
+    for(const item in this.joints) {
+      if(joint.name == item) {
+        // console.log(item, "  index => ", local);
+        joint_index = local;
+      }
+      local++;
     }
-
-    console.log(joint_index + "<<<<<<<<<<<<<joint_index<<<<<<<<<<<<<")
-
+    // console.log(joint_index + "<<<<<<<<<<<<<joint_index<<<<<<<<<<<<<")
     /////////////
-
-
     p[joint_index] = position;
     r[joint_index] = rotation;
 
-    for (var c in joint.children) {
+    for(var c in joint.children) {
       index_offset = this._recursive_apply_frame(
         joint.children[c],
         frame_pose,
@@ -535,20 +530,21 @@ class MEBvh {
   }
 
   all_frame_poses() {
-    console.log("ALL FRAME POSES" , this.joints.length)
+    console.log("ALL FRAME POSES", this.joints.length)
     //  Array.from(Array(this.joints.length), () => new Array(3));
     // what is -> p len ,  >>>>>>> 75
     // what is -> p len of [o] ,  >>>>>>> 38
     // what is -> p len of [o][0] ,  >>>>>>> 3
 
     // p = np.empty((this.frames, this.joints.length, 3));
-    var p = Array.from({length:this.frames}, () => Array.from({length:this.joints.length}, () => [0, 0, 0]));
+    var p = Array.from({length: this.frames}, () => Array.from({length: this.joints.length}, () => [0, 0, 0]));
     // r = np.empty((this.frames, this.joints.length, 3));
-    var r = Array.from({length:this.frames}, () => Array.from({length:this.joints.length}, () => [0, 0, 0]));
+    var r = Array.from({length: this.frames}, () => Array.from({length: this.joints.length}, () => [0, 0, 0]));
 
-    for (var frame = 0; frame < this.keyframes.length;frame++) {
-      console.log(local3[0] + "<<<<<<<<<<local3[0]<<")
+    for(var frame = 0;frame < this.keyframes.length;frame++) {
+    
       var local3 = this.frame_pose(frame);
+        console.log(local3[0] + "<<<<<<<<<<local3[0]<<")
       p[frame] = local3[0];
       r[frame] = local3[1];
     }
@@ -610,13 +606,17 @@ class MEBvh {
 
 var anim = new MEBvh();
 
-anim.parse_file().then(()=>{
+anim.parse_file().then(() => {
 
   console.info("plot_hierarchy no function")
   anim.plot_hierarchy();
 
   var r = anim.frame_pose(0);
-  console.log("FINAL R FROM anim.frame_pose(0); .____________" ,r)
+  console.log("FINAL R FROM anim.frame_pose(0); .____________", r)
+
+  var all = anim.all_frame_poses();
+
+  // all_p, all_r = anim.all_frame_poses()
 
 });
 
