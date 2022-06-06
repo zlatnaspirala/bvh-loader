@@ -105,24 +105,29 @@ class MEBvhJoint {
   }
 
   position_animated() {
-    // ???????????
-    // return any([x.endswith('position') for x in self.channels])
+    // true or false
+    var detFlag = false;
+    for (const item in this.channels) {
+          console.log(this.channels[item], "  position index => " )
+          console.log(this.channels[item].endsWith("position"), "  position " )
+          if (this.channels[item].endsWith("position") == true) {
+            detFlag = true;
+          }
+    }
+    return detFlag;
   }
 
   rotation_animated() {
-    // ??????????? true or false 
-    console.log(" self.channels ", this.channels)
+    // console.log(" self.channels ", this.channels)
     var detFlag = false;
     for (const item in this.channels) {
-          console.log(this.channels[item], "  index => " )
+          console.log(this.channels[item], " rotation  index => " )
           console.log(this.channels[item].endsWith("rotation"), "  rotation " )
           if (this.channels[item].endsWith("rotation") == true) {
             detFlag = true;
           }
     }
-    
     return detFlag;
-    // return any([x.endswith('rotation') for x in self.channels])
   }
 }
 
@@ -376,7 +381,7 @@ class MEBvh {
     for (var key in joint.channels) {
       var channel = joint.channels[key];
 
-      if (channel.endswith("rotation")) {
+      if (channel.endsWith("rotation")) {
         continue;
       }
 
