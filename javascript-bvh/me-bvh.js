@@ -69,7 +69,7 @@ var _AXES2TUPLE = {
 var _NEXT_AXIS = [1, 2, 0, 1];
 
 function euler2mat(ai, aj, ak, axes) {
-  if (typeof axes === 'undefined') axes='sxyz';
+  if (typeof axes === 'undefined') var axes='sxyz';
   // Return rotation matrix from Euler angles and axis sequence.
   // Parameters
   /*
@@ -134,31 +134,31 @@ function euler2mat(ai, aj, ak, axes) {
 
   // M = np.eye(3)
   var M = [
-    [1, 0, 0]
-    [0, 1, 0]
-    [0, 0, 1]
+    [1., 0., 0],
+    [0., 1., 0],
+    [0., 0., 1]
   ];
 
   if (repetition) {
-      M[i, i] = cj;
-      M[i, j] = sj*si;
-      M[i, k] = sj*ci;
-      M[j, i] = sj*sk;
-      M[j, j] = -cj*ss+cc;
-      M[j, k] = -cj*cs-sc;
-      M[k, i] = -sj*ck;
-      M[k, j] = cj*sc+cs;
-      M[k, k] = cj*cc-ss;
+      M[i][i] = cj;
+      M[i][j] = sj*si;
+      M[i][k] = sj*ci;
+      M[j][i] = sj*sk;
+      M[j][j] = -cj*ss+cc;
+      M[j][k] = -cj*cs-sc;
+      M[k][i] = -sj*ck;
+      M[k][j] = cj*sc+cs;
+      M[k][k] = cj*cc-ss;
   } else {
-      M[i, i] = cj*ck;
-      M[i, j] = sj*sc-cs;
-      M[i, k] = sj*cc+ss;
-      M[j, i] = cj*sk;
-      M[j, j] = sj*ss+cc;
-      M[j, k] = sj*cs-sc;
-      M[k, i] = -sj;
-      M[k, j] = cj*si;
-      M[k, k] = cj*ci;
+      M[i][i] = cj*ck;
+      M[i][j] = sj*sc-cs;
+      M[i][k] = sj*cc+ss;
+      M[j][i] = cj*sk;
+      M[j][j] = sj*ss+cc;
+      M[j][k] = sj*cs-sc;
+      M[k][i] = -sj;
+      M[k][j] = cj*si;
+      M[k][k] = cj*ci;
   }
   return M;
 }
@@ -489,10 +489,15 @@ class MEBvh {
         console.warn("Unknown channel {channel}");
       }
 
-      console.log(">>>>>>euler_rot>>>>>>>", euler_rot);
+    //   console.log(">>>>>>euler_rot>>>>>>>", euler_rot);
       // ?????????????????
       var M_channel = euler2mat(euler_rot[0], euler_rot[1], euler_rot[2], euler_rot[3])
+
       var M_rotation = multiply(M_rotation, M_channel);
+
+//       console.log(">>>>>>M_rotation>>>>>>>", M_rotation);
+      console.log(">>>>>>M_channel>>>>>>>", M_channel[2]);
+
 
       // return M_rotation, index_offset
       return [M_rotation, index_offset];
@@ -548,7 +553,7 @@ class MEBvh {
       for(var item in this.joints) {
 
         if(joint.name == item) {
-          console.log(">>>>(joint.channels.length == 0) >GOOD>>", item, " local2 .>>>>>", local2)
+          // console.log(">>>>(joint.channels.length == 0) >GOOD>>", item, " local2 .>>>>>", local2)
           joint_index = local2;
         }
         local2++;
@@ -617,8 +622,13 @@ class MEBvh {
 
   frame_pose(frame) {
 
-    var p = Array.from(Array(this.joints.length), () => new Array(3));
-    var r = Array.from(Array(this.joints.length), () => new Array(3));
+    var jointLength = 0;
+    for (var x in this.joints) { jointLength++ }
+
+    console.log(jointLength + " << jointLength" )
+
+    var p = Array.from(Array(jointLength), () => [0,0,0]);
+    var r = Array.from(Array(jointLength), () => [0,0,0]);
     // var p = np.empty((this.joints.length, 3));
     // var r = np.empty((this.joints.length, 3));
 
@@ -634,6 +644,8 @@ class MEBvh {
     M_parent[1][1] = 1;
     M_parent[2][2] = 1;
 
+    console.log(">>>>>>>>>>>>>>>>>>>>>>>>> p >>>>>>>>>>>>>>>>>>", p);
+
     this._recursive_apply_frame(
       this.root,
       frame_pose,
@@ -648,21 +660,22 @@ class MEBvh {
   }
 
   all_frame_poses() {
-    console.log("ALL FRAME POSES", this.joints.length)
     //  Array.from(Array(this.joints.length), () => new Array(3));
     // what is -> p len ,  >>>>>>> 75
     // what is -> p len of [o] ,  >>>>>>> 38
     // what is -> p len of [o][0] ,  >>>>>>> 3
-
+    var jointLength = 0;
+    for (var x in this.joints) { jointLength++ }
+    console.log("ALL FRAME POSES -. jointLength ", jointLength)
     // p = np.empty((this.frames, this.joints.length, 3));
-    var p = Array.from({length: this.frames}, () => Array.from({length: this.joints.length}, () => [0, 0, 0]));
+    var p = Array.from({length: this.frames}, () => Array.from({length: jointLength}, () => [0, 0, 0]));
     // r = np.empty((this.frames, this.joints.length, 3));
-    var r = Array.from({length: this.frames}, () => Array.from({length: this.joints.length}, () => [0, 0, 0]));
+    var r = Array.from({length: this.frames}, () => Array.from({length: jointLength}, () => [0, 0, 0]));
 
     for(var frame = 0;frame < this.keyframes.length;frame++) {
     
       var local3 = this.frame_pose(frame);
-        console.log(local3[0] + "<<<<<<<<<<local3[0]<<")
+        console.log(local3[0] + "<<<<<<<<<<this.frame_pose(frame)  <<")
       p[frame] = local3[0];
       r[frame] = local3[1];
     }
