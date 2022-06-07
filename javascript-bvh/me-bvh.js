@@ -45,6 +45,126 @@ function multiply(a, b) {
 
 /**
  * @description
+ * Euler's rotation theorem tells us that any rotation in 3D can be described by 3
+ * angles.  Let's call the 3 angles the *Euler angle vector* and call the angles
+ * in the vector :Math:`alpha`, :Math:`beta` and :Math:`gamma`.  The vector is [
+ * :Math:`alpha`, :Math:`beta`. :Math:`gamma` ] and, in this description, the
+ * order of the parameters specifies the order in which the rotations occur (so
+ * the rotation corresponding to :Math:`alpha` is applied first).
+ * @source https://github.com/matthew-brett/transforms3d/blob/master/transforms3d/euler.py
+ */
+
+ // map axes strings to/from tuples of inner axis, parity, repetition, frame
+var _AXES2TUPLE = {
+     'sxyz': [0, 0, 0, 0], 'sxyx': [0, 0, 1, 0], 'sxzy': [0, 1, 0, 0],
+     'sxzx': [0, 1, 1, 0], 'syzx': [1, 0, 0, 0], 'syzy': [1, 0, 1, 0],
+     'syxz': [1, 1, 0, 0], 'syxy': [1, 1, 1, 0], 'szxy': [2, 0, 0, 0],
+     'szxz': [2, 0, 1, 0], 'szyx': [2, 1, 0, 0], 'szyz': [2, 1, 1, 0],
+     'rzyx': [0, 0, 0, 1], 'rxyx': [0, 0, 1, 1], 'ryzx': [0, 1, 0, 1],
+     'rxzx': [0, 1, 1, 1], 'rxzy': [1, 0, 0, 1], 'ryzy': [1, 0, 1, 1],
+     'rzxy': [1, 1, 0, 1], 'ryxy': [1, 1, 1, 1], 'ryxz': [2, 0, 0, 1],
+     'rzxz': [2, 0, 1, 1], 'rxyz': [2, 1, 0, 1], 'rzyz': [2, 1, 1, 1]};
+
+// axis sequences for Euler angles
+var _NEXT_AXIS = [1, 2, 0, 1];
+
+function euler2mat(ai, aj, ak, axes) {
+  if (typeof axes === 'undefined') axes='sxyz';
+  // Return rotation matrix from Euler angles and axis sequence.
+  // Parameters
+  /*
+  ai : float
+      First rotation angle (according to `axes`).
+  aj : float
+      Second rotation angle (according to `axes`).
+  ak : float
+      Third rotation angle (according to `axes`).
+  axes : str, optional
+      Axis specification; one of 24 axis sequences as string or encoded
+      tuple - e.g. ``sxyz`` (the default).
+  Returns
+  -------
+  mat : array (3, 3)
+      Rotation matrix or affine.
+  Examples
+  --------
+  >>> R = euler2mat(1, 2, 3, 'syxz')
+  >>> np.allclose(np.sum(R[0]), -1.34786452)
+  True
+  >>> R = euler2mat(1, 2, 3, (0, 1, 0, 1))
+  >>> np.allclose(np.sum(R[0]), -0.383436184)
+  True
+  */
+  try {
+      var firstaxis  = _AXES2TUPLE[axes][0],
+          parity     = _AXES2TUPLE[axes][1],
+          repetition = _AXES2TUPLE[axes][2],
+          frame      = _AXES2TUPLE[axes][3];
+  }
+  catch (AttributeError) {
+      // _TUPLE2AXES[axes]  # validation
+      // firstaxis, parity, repetition, frame = axes
+      console.error("AttributeError: ", AttributeError);
+  }
+
+  var i = firstaxis;
+  var j = _NEXT_AXIS[i+parity];
+  var k = _NEXT_AXIS[i-parity+1];
+
+  if (frame) {
+      ai = ak;
+      ak =  ai;
+  }
+  if (parity) {
+      ai= -ai;
+      aj = -aj;
+      ak = -ak;
+  }
+
+  var si = Math.sin(ai);
+  var sj = Math.sin(aj);
+  var sk = Math.sin(ak);
+  var ci = Math.cos(ai);
+  var cj = Math.cos(aj);
+  var ck = Math.cos(ak);
+  var cc = ci*ck;
+  var cs = ci*sk;
+  var sc = si*ck;
+  var ss = si*sk;
+
+  // M = np.eye(3)
+  var M = [
+    [1, 0, 0]
+    [0, 1, 0]
+    [0, 0, 1]
+  ];
+
+  if (repetition) {
+      M[i, i] = cj;
+      M[i, j] = sj*si;
+      M[i, k] = sj*ci;
+      M[j, i] = sj*sk;
+      M[j, j] = -cj*ss+cc;
+      M[j, k] = -cj*cs-sc;
+      M[k, i] = -sj*ck;
+      M[k, j] = cj*sc+cs;
+      M[k, k] = cj*cc-ss;
+  } else {
+      M[i, i] = cj*ck;
+      M[i, j] = sj*sc-cs;
+      M[i, k] = sj*cc+ss;
+      M[j, i] = cj*sk;
+      M[j, j] = sj*ss+cc;
+      M[j, k] = sj*cs-sc;
+      M[k, i] = -sj;
+      M[k, j] = cj*si;
+      M[k, k] = cj*ci;
+  }
+  return M;
+}
+
+/**
+ * @description
  * How to calculate the angle from rotation matrix.
  */
 function mat2euler(M, rad2deg_flag) {
@@ -370,11 +490,9 @@ class MEBvh {
       }
 
       console.log(">>>>>>euler_rot>>>>>>>", euler_rot);
-
       // ?????????????????
-      // var M_channel = euler2mat(*euler_rot)
-      // ?????????????????
-      // M_rotation = M_rotation.dot(M_channel)
+      var M_channel = euler2mat(euler_rot[0], euler_rot[1], euler_rot[2], euler_rot[3])
+      var M_rotation = multiply(M_rotation, M_channel);
 
       // return M_rotation, index_offset
       return [M_rotation, index_offset];
@@ -615,6 +733,8 @@ anim.parse_file().then(() => {
   console.log("FINAL R FROM anim.frame_pose(0); .____________", r)
 
   var all = anim.all_frame_poses();
+
+  console.log("FINAL all FROM anim.all_frame_poses(); .____________", all)
 
   // all_p, all_r = anim.all_frame_poses()
 
