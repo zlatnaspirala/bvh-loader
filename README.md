@@ -2,15 +2,23 @@
 # bvh-loader.js
 # 
 
-### Objective 1  `bvh.py to bvh.js` [90% DONE] ☕
+### Objective 1 [90% DONE] ☕
+bvh.py to bvh.js 
+
 Prepare BVH Loader only data aspect for matrix-engine.
 
+
+
 ### Objective 2
-Implement loader intro matrix-engine.
+Implement loader intro matrix-engine. 🤞
 
 
 https://maximumroulette.com
+
 GNU GENERAL PUBLIC LICENSE Version 3
+
+### Credits:
+
 Original source: https://github.com/dabeschte/npybvh
 
 
