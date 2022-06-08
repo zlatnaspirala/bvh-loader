@@ -45,7 +45,7 @@ import MEBvh from "./index";
 
 var anim = new MEBvh();
 
-anim.parse_file().then(() => {
+anim.parse_file("https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-BVH-test/main/javascript-bvh/example.bvh").then(() => {
 
   console.info("plot_hierarchy no function")
   anim.plot_hierarchy();
