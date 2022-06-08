@@ -10,10 +10,14 @@ Prepare BVH Loader only data aspect for matrix-engine.
 
 Prepare npm package.
 
+ TODO:
+ - fix for _end joint position maybe rotation return data.
 
 
 ### Objective 2
 Implement loader intro matrix-engine. 🤞
+
+Make pseudo (primitives) Skeletal Mesh and adapt it to the bvh loader output data.🤞
 
 
 ## Project structure
