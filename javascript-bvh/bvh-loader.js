@@ -286,10 +286,10 @@ class MEBvh {
     this.myName = "MATRIX-ENGINE-BVH";
   }
 
-  async parse_file() {
+  async parse_file(link) {
 
     // var link ="example.bvh";
-    var link = "https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-BVH-test/main/javascript-bvh/example.bvh";
+    // var link = "https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-BVH-test/main/javascript-bvh/example.bvh";
 
     return new Promise((resolve, reject) => {
       fetch(link).then(event => {
@@ -773,7 +773,7 @@ class MEBvh {
 
 var anim = new MEBvh();
 
-anim.parse_file().then(() => {
+anim.parse_file("https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-BVH-test/main/javascript-bvh/example.bvh").then(() => {
 
   console.info("plot_hierarchy no function")
   anim.plot_hierarchy();

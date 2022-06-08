@@ -1,6 +1,6 @@
 {
   "name": "bvh-loader",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "BVH Loader. WIP",
   "main": "index.js",
   "scripts": {
