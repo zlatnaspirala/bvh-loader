@@ -4,7 +4,6 @@
  * @author Nikola Lukic
  */
 
-// unused
 function arraySum3(a, b) {
   var rez1 = a[0] + b[0];
   var rez2 = a[1] + b[1];
@@ -18,8 +17,8 @@ function deg2rad(degrees) {
 
 function npdeg2rad(degrees) {
   return [degrees[0] * (Math.PI / 180),
-          degrees[1] * (Math.PI / 180),
-          degrees[2] * (Math.PI / 180)];
+  degrees[1] * (Math.PI / 180),
+  degrees[2] * (Math.PI / 180)];
 }
 
 function rad2deg(radians) {
@@ -30,25 +29,24 @@ function byId(id) {
   return document.getElementById(id);
 }
 
-// fix for .dot NDim vx 1D dim
-function dot3vs1 (a, b) {
+// fix for .dot N-dim vs 1D-dim Array
+function dot3vs1(a, b) {
   var aNumRows = a.length, aNumCols = a[0].length,
     bNumRows = b.length;
-    var REZ1 = 0, REZ2 = 0, REZ3 = 0;
-    if (aNumRows == 3 && aNumCols == 3 &&
-       bNumRows == 3) {
-        for (var j = 0;j < a.length;j++) {
-          // First root of 3x3 a.
-           REZ1 += a[j][0] * b[j];
-           REZ2 += a[j][1] * b[j];
-           REZ3 += a[j][2] * b[j];
-        }
-        var finalRez = [REZ1, REZ2, REZ3];
-        // console.info("dot3vs1 returns ", finalRez);
-        return finalRez;
-    } else {
-      console.error("Bad arguments for dot3vs1");
+  var REZ1 = 0, REZ2 = 0, REZ3 = 0;
+  if(aNumRows == 3 && aNumCols == 3 &&
+    bNumRows == 3) {
+    for(var j = 0;j < a.length;j++) {
+      // First root of 3x3 a.
+      REZ1 += a[j][0] * b[j];
+      REZ2 += a[j][1] * b[j];
+      REZ3 += a[j][2] * b[j];
     }
+    var finalRez = [REZ1, REZ2, REZ3];
+    return finalRez;
+  } else {
+    console.error("Bad arguments for dot3vs1");
+  }
 }
 
 function multiply(a, b) {
@@ -78,22 +76,23 @@ function multiply(a, b) {
  * @source https://github.com/matthew-brett/transforms3d/blob/master/transforms3d/euler.py
  */
 
- // map axes strings to/from tuples of inner axis, parity, repetition, frame
+// map axes strings to/from tuples of inner axis, parity, repetition, frame
 var _AXES2TUPLE = {
-     'sxyz': [0, 0, 0, 0], 'sxyx': [0, 0, 1, 0], 'sxzy': [0, 1, 0, 0],
-     'sxzx': [0, 1, 1, 0], 'syzx': [1, 0, 0, 0], 'syzy': [1, 0, 1, 0],
-     'syxz': [1, 1, 0, 0], 'syxy': [1, 1, 1, 0], 'szxy': [2, 0, 0, 0],
-     'szxz': [2, 0, 1, 0], 'szyx': [2, 1, 0, 0], 'szyz': [2, 1, 1, 0],
-     'rzyx': [0, 0, 0, 1], 'rxyx': [0, 0, 1, 1], 'ryzx': [0, 1, 0, 1],
-     'rxzx': [0, 1, 1, 1], 'rxzy': [1, 0, 0, 1], 'ryzy': [1, 0, 1, 1],
-     'rzxy': [1, 1, 0, 1], 'ryxy': [1, 1, 1, 1], 'ryxz': [2, 0, 0, 1],
-     'rzxz': [2, 0, 1, 1], 'rxyz': [2, 1, 0, 1], 'rzyz': [2, 1, 1, 1]};
+  'sxyz': [0, 0, 0, 0], 'sxyx': [0, 0, 1, 0], 'sxzy': [0, 1, 0, 0],
+  'sxzx': [0, 1, 1, 0], 'syzx': [1, 0, 0, 0], 'syzy': [1, 0, 1, 0],
+  'syxz': [1, 1, 0, 0], 'syxy': [1, 1, 1, 0], 'szxy': [2, 0, 0, 0],
+  'szxz': [2, 0, 1, 0], 'szyx': [2, 1, 0, 0], 'szyz': [2, 1, 1, 0],
+  'rzyx': [0, 0, 0, 1], 'rxyx': [0, 0, 1, 1], 'ryzx': [0, 1, 0, 1],
+  'rxzx': [0, 1, 1, 1], 'rxzy': [1, 0, 0, 1], 'ryzy': [1, 0, 1, 1],
+  'rzxy': [1, 1, 0, 1], 'ryxy': [1, 1, 1, 1], 'ryxz': [2, 0, 0, 1],
+  'rzxz': [2, 0, 1, 1], 'rxyz': [2, 1, 0, 1], 'rzyz': [2, 1, 1, 1]
+};
 
 // axis sequences for Euler angles
 var _NEXT_AXIS = [1, 2, 0, 1];
 
 function euler2mat(ai, aj, ak, axes) {
-  if (typeof axes === 'undefined') var axes='sxyz';
+  if(typeof axes === 'undefined') var axes = 'sxyz';
   // Return rotation matrix from Euler angles and axis sequence.
   // Parameters
   /*
@@ -117,32 +116,31 @@ function euler2mat(ai, aj, ak, axes) {
   True
   >>> R = euler2mat(1, 2, 3, (0, 1, 0, 1))
   >>> np.allclose(np.sum(R[0]), -0.383436184)
-  True
-  */
+  True */
   try {
-      var firstaxis  = _AXES2TUPLE[axes][0],
-          parity     = _AXES2TUPLE[axes][1],
-          repetition = _AXES2TUPLE[axes][2],
-          frame      = _AXES2TUPLE[axes][3];
+    var firstaxis = _AXES2TUPLE[axes][0],
+      parity = _AXES2TUPLE[axes][1],
+      repetition = _AXES2TUPLE[axes][2],
+      frame = _AXES2TUPLE[axes][3];
   }
-  catch (AttributeError) {
-      // _TUPLE2AXES[axes]  # validation
-      // firstaxis, parity, repetition, frame = axes
-      console.error("AttributeError: ", AttributeError);
+  catch(AttributeError) {
+    // _TUPLE2AXES[axes]  # validation
+    // firstaxis, parity, repetition, frame = axes
+    console.error("AttributeError: ", AttributeError);
   }
 
   var i = firstaxis;
-  var j = _NEXT_AXIS[i+parity];
-  var k = _NEXT_AXIS[i-parity+1];
+  var j = _NEXT_AXIS[i + parity];
+  var k = _NEXT_AXIS[i - parity + 1];
 
-  if (frame) {
-      ai = ak;
-      ak =  ai;
+  if(frame) {
+    ai = ak;
+    ak = ai;
   }
-  if (parity) {
-      ai= -ai;
-      aj = -aj;
-      ak = -ak;
+  if(parity) {
+    ai = -ai;
+    aj = -aj;
+    ak = -ak;
   }
 
   var si = Math.sin(ai);
@@ -151,10 +149,10 @@ function euler2mat(ai, aj, ak, axes) {
   var ci = Math.cos(ai);
   var cj = Math.cos(aj);
   var ck = Math.cos(ak);
-  var cc = ci*ck;
-  var cs = ci*sk;
-  var sc = si*ck;
-  var ss = si*sk;
+  var cc = ci * ck;
+  var cs = ci * sk;
+  var sc = si * ck;
+  var ss = si * sk;
 
   // M = np.eye(3)
   var M = [
@@ -163,26 +161,26 @@ function euler2mat(ai, aj, ak, axes) {
     [0., 0., 1]
   ];
 
-  if (repetition) {
-      M[i][i] = cj;
-      M[i][j] = sj*si;
-      M[i][k] = sj*ci;
-      M[j][i] = sj*sk;
-      M[j][j] = -cj*ss+cc;
-      M[j][k] = -cj*cs-sc;
-      M[k][i] = -sj*ck;
-      M[k][j] = cj*sc+cs;
-      M[k][k] = cj*cc-ss;
+  if(repetition) {
+    M[i][i] = cj;
+    M[i][j] = sj * si;
+    M[i][k] = sj * ci;
+    M[j][i] = sj * sk;
+    M[j][j] = -cj * ss + cc;
+    M[j][k] = -cj * cs - sc;
+    M[k][i] = -sj * ck;
+    M[k][j] = cj * sc + cs;
+    M[k][k] = cj * cc - ss;
   } else {
-      M[i][i] = cj*ck;
-      M[i][j] = sj*sc-cs;
-      M[i][k] = sj*cc+ss;
-      M[j][i] = cj*sk;
-      M[j][j] = sj*ss+cc;
-      M[j][k] = sj*cs-sc;
-      M[k][i] = -sj;
-      M[k][j] = cj*si;
-      M[k][k] = cj*ci;
+    M[i][i] = cj * ck;
+    M[i][j] = sj * sc - cs;
+    M[i][k] = sj * cc + ss;
+    M[j][i] = cj * sk;
+    M[j][j] = sj * ss + cc;
+    M[j][k] = sj * cs - sc;
+    M[k][i] = -sj;
+    M[k][j] = cj * si;
+    M[k][k] = cj * ci;
   }
   return M;
 }
@@ -225,8 +223,7 @@ function mat2euler(M, rad2deg_flag) {
     yaw = yaw * 180 / Math.PI;
   }
 
-  rez = [roll, pitch, yaw];
-  // console.log("Rez of => ", rez);
+  var rez = [roll, pitch, yaw];
   return rez;
 }
 
@@ -267,7 +264,6 @@ class MEBvhJoint {
   }
 
   rotation_animated() {
-    // console.log(" self.channels ", this.channels)
     var detFlag = false;
     for(const item in this.channels) {
       // console.log(this.channels[item].endsWith("rotation"), "  rotation " )
@@ -302,8 +298,7 @@ class MEBvh {
           var motion = text.split("MOTION")[1];
           // console.log("Test split MOTION hierarchy part-> ", hierarchy);
           // console.log("Test split MOTION motion part -> ", motion);
-          console.log("Test scope -> ", this.myName);
-
+          // console.log("Test scope -> ", this.myName);
           var newLog = document.createElement("div");
           newLog.innerHTML += '<h2>Hierarchy</h2>';
           newLog.innerHTML += '<p>' + hierarchy + '</p>';
@@ -317,26 +312,20 @@ class MEBvh {
           this._parse_hierarchy(hierarchy);
           this.parse_motion(motion);
 
-          resolve();
+          setTimeout( resolve, 2000 )
         });
       });
     });
   }
 
   _parse_hierarchy(text) {
-
     var lines = text.split(/\s*\n+\s*/);
-    // console.log("Test _parse_hierarchy  -> ", lines);
-
     var joint_stack = [];
 
     for(var key in lines) {
       var line = lines[key];
-      // console.log("Test _parse_hierarchy line -> ", line);
-
       var words = line.split(/\s+/);
       var instruction = words[0];
-
       var parent = null;
 
       if(instruction == "JOINT" || instruction == "ROOT") {
@@ -515,13 +504,13 @@ class MEBvh {
         console.warn("Unknown channel {channel}");
       }
 
-    //   console.log(">>>>>>euler_rot>>>>>>>", euler_rot);
+      //   console.log(">>>>>>euler_rot>>>>>>>", euler_rot);
       // ?????????????????
       var M_channel = euler2mat(euler_rot[0], euler_rot[1], euler_rot[2], euler_rot[3])
 
       var M_rotation = multiply(M_rotation, M_channel);
 
-       // console.log(">>>>>>M_rotation>>>>>>>", M_rotation);
+      // console.log(">>>>>>M_rotation>>>>>>>", M_rotation);
       // console.log(">>>>>>M_channel>>>>>>>", M_channel[2]);
 
 
@@ -608,16 +597,16 @@ class MEBvh {
     }
 
     // multiply
-      /* Normal flow
-      joint.offset -> [-0.01683  1.81591  0.07903]
-      M_parent -> [[ 1.          0.          0.        ]
-                  [ 0.          0.9612617   0.27563736]
-                  [ 0.         -0.27563736  0.9612617 ]]
-      M_parent.dot(M_rotation) -> [[ 1.          0.          0.        ]
-                                  [ 0.          0.9961947  -0.08715574]
-                                  [ 0.          0.08715574  0.9961947 ]]
-       offset_position -> [0. 0. 0.]
-     */
+    /* Normal flow
+    joint.offset -> [-0.01683  1.81591  0.07903]
+    M_parent -> [[ 1.          0.          0.        ]
+                [ 0.          0.9612617   0.27563736]
+                [ 0.         -0.27563736  0.9612617 ]]
+    M_parent.dot(M_rotation) -> [[ 1.          0.          0.        ]
+                                [ 0.          0.9961947  -0.08715574]
+                                [ 0.          0.08715574  0.9961947 ]]
+     offset_position -> [0. 0. 0.]
+   */
 
     var M = multiply(M_parent, M_rotation);
 
@@ -629,7 +618,7 @@ class MEBvh {
     //console.log(offset_position + "<<<<<<<<<<<<<offset_position<<<<<<<<<<<<<",  Array.isArray(offset_position))
 
     var position = arraySum3(p_parent, dot3vs1(M_parent, joint.offset));
-        position = arraySum3(position, offset_position);
+    position = arraySum3(position, offset_position);
 
     // console.log(position + "<<<<<<<<<<<<<position<<<<<<<<<<<<<")
     // rotation = rad2deg(mat2euler(M));
@@ -669,9 +658,9 @@ class MEBvh {
   frame_pose(frame) {
 
     var jointLength = 0;
-    for (var x in this.joints) { jointLength++ }
-    var p = Array.from(Array(jointLength), () => [0,0,0]);
-    var r = Array.from(Array(jointLength), () => [0,0,0]);
+    for(var x in this.joints) {jointLength++}
+    var p = Array.from(Array(jointLength), () => [0, 0, 0]);
+    var r = Array.from(Array(jointLength), () => [0, 0, 0]);
     // var p = np.empty((this.joints.length, 3));
     // var r = np.empty((this.joints.length, 3));
     var frame_pose = this.keyframes[frame];
@@ -685,7 +674,7 @@ class MEBvh {
     M_parent[1][1] = 1;
     M_parent[2][2] = 1;
 
-    // console.log(">>>>>>>>>>>>>>>>>>>>>>>>> p >>>>>>>>>>>>>>>>>>", p);
+    // console.log(">>>>>>>>>>>>>>>>>>>>>>>>> p ", p);
 
     this._recursive_apply_frame(
       this.root,
@@ -697,6 +686,8 @@ class MEBvh {
       [0, 0, 0]
     );
 
+    // console.log(">>>>>>>>>>>>>>>>>AFTER>>>>>>>> p ", p);
+
     return [p, r];
   }
 
@@ -706,7 +697,7 @@ class MEBvh {
     // what is -> p len of [o] ,  >>>>>>> 38
     // what is -> p len of [o][0] ,  >>>>>>> 3
     var jointLength = 0;
-    for (var x in this.joints) { jointLength++ }
+    for(var x in this.joints) {jointLength++}
     console.log("ALL FRAME POSES -. jointLength ", jointLength)
     // p = np.empty((this.frames, this.joints.length, 3));
     var p = Array.from({length: this.frames}, () => Array.from({length: jointLength}, () => [0, 0, 0]));
@@ -714,9 +705,9 @@ class MEBvh {
     var r = Array.from({length: this.frames}, () => Array.from({length: jointLength}, () => [0, 0, 0]));
 
     for(var frame = 0;frame < this.keyframes.length;frame++) {
-    
+
       var local3 = this.frame_pose(frame);
-       // console.log(local3[0] + "<<<<<<<<<<this.frame_pose(frame)  <<")
+      // console.log(local3[0] + "<<<<<<<<<<this.frame_pose(frame)  <<")
       p[frame] = local3[0];
       r[frame] = local3[1];
     }
@@ -753,7 +744,11 @@ class MEBvh {
   }
 
   joint_names() {
-    return this.joints.keys();
+    var keys = [];
+    for(var key in this.joints) {
+      keys.push(key);
+    }
+    return keys;
   }
 
   plot_all_frames() {
@@ -784,12 +779,17 @@ anim.parse_file().then(() => {
   anim.plot_hierarchy();
 
   var r = anim.frame_pose(0);
-  console.log("FINAL R FROM anim.frame_pose(0); .____________", r)
+
+  console.log("FINAL P => ", r[0].length)
+  console.log("FINAL R => ", r[1].length)
+
+  var KEYS = anim.joint_names();
+  for(var x = 0;x < r[0].length;x++) {
+    console.log("->" + KEYS[x] + "-> position: " + r[0][x] + " rotation: " + r[1][x]);
+  }
 
   var all = anim.all_frame_poses();
-
-  console.log("FINAL all FROM anim.all_frame_poses(); .____________", all)
-
+  console.log("Final All -> ", all);
   // all_p, all_r = anim.all_frame_poses()
 
 });
