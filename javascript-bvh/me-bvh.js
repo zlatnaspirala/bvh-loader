@@ -5,8 +5,11 @@
  */
 
 // unused
-function list(iterable) {
-  return [...iterable];
+function arraySum3(a, b) {
+  var rez1 = a[0] + b[0];
+  var rez2 = a[1] + b[1];
+  var rez3 = a[2] + b[2];
+  return [rez1, rez2, rez3];
 }
 
 function deg2rad(degrees) {
@@ -25,6 +28,27 @@ function rad2deg(radians) {
 
 function byId(id) {
   return document.getElementById(id);
+}
+
+// fix for .dot NDim vx 1D dim
+function dot3vs1 (a, b) {
+  var aNumRows = a.length, aNumCols = a[0].length,
+    bNumRows = b.length;
+    var REZ1 = 0, REZ2 = 0, REZ3 = 0;
+    if (aNumRows == 3 && aNumCols == 3 &&
+       bNumRows == 3) {
+        for (var j = 0;j < a.length;j++) {
+          // First root of 3x3 a.
+           REZ1 += a[j][0] * b[j];
+           REZ2 += a[j][1] * b[j];
+           REZ3 += a[j][2] * b[j];
+        }
+        var finalRez = [REZ1, REZ2, REZ3];
+        // console.info("dot3vs1 returns ", finalRez);
+        return finalRez;
+    } else {
+      console.error("Bad arguments for dot3vs1");
+    }
 }
 
 function multiply(a, b) {
@@ -373,6 +397,8 @@ class MEBvh {
     byId('log').appendChild(newLog1);
     console.log("_add_pose_recursive : ", joint);
 
+    console.log("_add_pose_recursive : ", joint.offset);
+
     var pose = joint.offset + offset;
     poses.push(pose);
 
@@ -495,8 +521,8 @@ class MEBvh {
 
       var M_rotation = multiply(M_rotation, M_channel);
 
-//       console.log(">>>>>>M_rotation>>>>>>>", M_rotation);
-      console.log(">>>>>>M_channel>>>>>>>", M_channel[2]);
+       // console.log(">>>>>>M_rotation>>>>>>>", M_rotation);
+      // console.log(">>>>>>M_channel>>>>>>>", M_channel[2]);
 
 
       // return M_rotation, index_offset
@@ -560,8 +586,10 @@ class MEBvh {
       }
 
       // joint_index = list(this.joints.values()).index(joint); ORI
-
-      p[joint_index] = p_parent + multiply(M_parent, joint.offset);
+      // console.log(p_parent + " p_parent")
+      // dot3vs1
+      p[joint_index] = arraySum3(p_parent, dot3vs1(M_parent, joint.offset));
+      // console.log(" TEST TEST p[joint_index]  ", p[joint_index] )
 
       r[joint_index] = mat2euler(M_parent);
       return index_offset;
@@ -580,12 +608,30 @@ class MEBvh {
     }
 
     // multiply
-    // var M = M_parent.dot(M_rotation);
+      /* Normal flow
+      joint.offset -> [-0.01683  1.81591  0.07903]
+      M_parent -> [[ 1.          0.          0.        ]
+                  [ 0.          0.9612617   0.27563736]
+                  [ 0.         -0.27563736  0.9612617 ]]
+      M_parent.dot(M_rotation) -> [[ 1.          0.          0.        ]
+                                  [ 0.          0.9961947  -0.08715574]
+                                  [ 0.          0.08715574  0.9961947 ]]
+       offset_position -> [0. 0. 0.]
+     */
 
     var M = multiply(M_parent, M_rotation);
 
-    var position = p_parent + multiply(M_parent, joint.offset) + offset_position;
+    // https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:adding-and-subtracting-matrices/e/matrix_addition_and_subtraction
 
+    //console.log( joint.offset + "<<<<<<<<<<<<<joint_index<<<<<<<<<<<<<" , Array.isArray(joint.offset))
+    //console.log(M_parent+ "<<<<<<<<<<<<<M_parent<<<<<<<<<<<< M_parent.length  is ARRAY" ,  Array.isArray(M_parent))
+    //console.log(p_parent + "<<<<<<<<<<<<<p_parent<<<<<<<<<<<<<",  Array.isArray(p_parent))
+    //console.log(offset_position + "<<<<<<<<<<<<<offset_position<<<<<<<<<<<<<",  Array.isArray(offset_position))
+
+    var position = arraySum3(p_parent, dot3vs1(M_parent, joint.offset));
+        position = arraySum3(position, offset_position);
+
+    // console.log(position + "<<<<<<<<<<<<<position<<<<<<<<<<<<<")
     // rotation = rad2deg(mat2euler(M));
     var rotation = mat2euler(M, "rad2deg");
 
@@ -624,16 +670,11 @@ class MEBvh {
 
     var jointLength = 0;
     for (var x in this.joints) { jointLength++ }
-
-    console.log(jointLength + " << jointLength" )
-
     var p = Array.from(Array(jointLength), () => [0,0,0]);
     var r = Array.from(Array(jointLength), () => [0,0,0]);
     // var p = np.empty((this.joints.length, 3));
     // var r = np.empty((this.joints.length, 3));
-
     var frame_pose = this.keyframes[frame];
-
     var M_parent = [
       [0, 0, 0],
       [0, 0, 0],
@@ -644,7 +685,7 @@ class MEBvh {
     M_parent[1][1] = 1;
     M_parent[2][2] = 1;
 
-    console.log(">>>>>>>>>>>>>>>>>>>>>>>>> p >>>>>>>>>>>>>>>>>>", p);
+    // console.log(">>>>>>>>>>>>>>>>>>>>>>>>> p >>>>>>>>>>>>>>>>>>", p);
 
     this._recursive_apply_frame(
       this.root,
@@ -675,7 +716,7 @@ class MEBvh {
     for(var frame = 0;frame < this.keyframes.length;frame++) {
     
       var local3 = this.frame_pose(frame);
-        console.log(local3[0] + "<<<<<<<<<<this.frame_pose(frame)  <<")
+       // console.log(local3[0] + "<<<<<<<<<<this.frame_pose(frame)  <<")
       p[frame] = local3[0];
       r[frame] = local3[1];
     }
