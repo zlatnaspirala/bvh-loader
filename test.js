@@ -24,9 +24,5 @@ anim.parse_file().then(() => {
 
   var all = anim.all_frame_poses();
   console.log("Final All -> ", all);
-  // all_p, all_r = anim.all_frame_poses()
 
 });
-
-// extract single frame pose: axis0=joint, axis1=positionXYZ/rotationXYZ
-// p, r = anim.frame_pose(0);
