@@ -306,7 +306,7 @@ class MEBvh {
 
           var newLog2 = document.createElement("span");
           newLog2.innerHTML += '<h2>Motion</h2>';
-          newLog2.innerHTML += '<p class="paragraf" >' + motion + '</p>';
+          newLog2.innerHTML += '<p class="paragraf fixHeight" >' + motion + '</p>';
           byId('log').appendChild(newLog2);
 
           this._parse_hierarchy(hierarchy);
@@ -374,21 +374,21 @@ class MEBvh {
 
     var newLog1 = document.createElement("span");
     newLog1.innerHTML += '<h2>add_pose_recursive</h2>';
-    newLog1.innerHTML += '<p class="paragraf" >' + joint + '</p>';
+    newLog1.innerHTML += '<p class="paragraf" >Joint Name: ' + joint.name + '</p>';
+    newLog1.innerHTML += '<p>joint.parent    : ' + (joint.parent != null ? joint.parent.name : 'null') + '</p>';
     newLog1.innerHTML += '<p>joint.offset    : ' + joint.offset + '</p>';
-    newLog1.innerHTML += '<p>joint.children  : ' + joint.children + '</p>';
+    newLog1.innerHTML += '<p>joint.children.length  : ' + joint.children.length + '</p>';
 
-    for(var lKey in joint.children[0]) {
-      newLog1.innerHTML += '<p>joint.children[0] ' + lKey + ' -> ' + joint.children[0][lKey] + '</p>';
-    }
+    (joint.children.length != 0 ? newLog1.innerHTML += '<p> Childrens: ' : newLog1.innerHTML += 'No Childrens ' );
+    joint.children.forEach(iJoint => {
+        newLog1.innerHTML += ' ' + iJoint['name'] + ' , ';
+    });
+    newLog1.innerHTML += '</p>';
 
     newLog1.innerHTML += '<p>Argument offset : ' + offset + '</p>';
     byId('log').appendChild(newLog1);
-    console.log("_add_pose_recursive : ", joint);
 
-    console.log("_add_pose_recursive : ", joint.offset);
-
-    var pose = joint.offset + offset;
+    var pose = arraySum3(joint.offset, offset);
     poses.push(pose);
 
     for(var c in joint.children) {
@@ -782,6 +782,9 @@ anim.parse_file("https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-B
 
   console.log("FINAL P => ", r[0].length)
   console.log("FINAL R => ", r[1].length)
+
+  console.log("FINAL P => ", r[0])
+  console.log("FINAL R => ", r[1])
 
   var KEYS = anim.joint_names();
   for(var x = 0;x < r[0].length;x++) {

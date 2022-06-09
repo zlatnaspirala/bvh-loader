@@ -1,6 +1,6 @@
 {
   "name": "bvh-loader",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "BVH Loader. WIP",
   "main": "index.js",
   "scripts": {
@@ -11,9 +11,9 @@
     "url": "git+https://github.com/zlatnaspirala/Matrix-Engine-BVH-test.git"
   },
   "keywords": [
-    "bvh",
-    "loader",
-    "bvh-js"
+    "bvh", "bvh-loader",
+    "loader", "bvh-glmatrix",
+    "bvh-js", "bvh.py"
   ],
   "author": "Nikola Lukic",
   "license": "GPL-3.0-or-later",
