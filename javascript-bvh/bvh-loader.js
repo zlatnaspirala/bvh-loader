@@ -255,7 +255,6 @@ class MEBvhJoint {
     // true or false
     var detFlag = false;
     for(const item in this.channels) {
-      // console.log(this.channels[item].endsWith("position"), "  position " )
       if(this.channels[item].endsWith("position") == true) {
         detFlag = true;
       }
@@ -266,7 +265,6 @@ class MEBvhJoint {
   rotation_animated() {
     var detFlag = false;
     for(const item in this.channels) {
-      // console.log(this.channels[item].endsWith("rotation"), "  rotation " )
       if(this.channels[item].endsWith("rotation") == true) {
         detFlag = true;
       }
@@ -312,7 +310,7 @@ class MEBvh {
           this._parse_hierarchy(hierarchy);
           this.parse_motion(motion);
 
-          setTimeout( resolve, 2000 )
+          setTimeout( resolve, 100 )
         });
       });
     });
@@ -786,8 +784,14 @@ anim.parse_file("https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-B
   console.log("FINAL P => ", r[0])
   console.log("FINAL R => ", r[1])
 
+  var newLog = document.createElement("div");
+    newLog.innerHTML += '<h2>PRINT POSITION AND ROTATION </h2>';
+
   var KEYS = anim.joint_names();
   for(var x = 0;x < r[0].length;x++) {
+    
+    newLog.innerHTML += '<p>' + "->" + KEYS[x] + "-> position: " + r[0][x] + " rotation: " + r[1][x] + '</p>';
+    byId('log').appendChild(newLog);
     console.log("->" + KEYS[x] + "-> position: " + r[0][x] + " rotation: " + r[1][x]);
   }
 
