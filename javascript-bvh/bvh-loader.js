@@ -2,6 +2,7 @@
  * @description Manual convert python script BVH
  * from https://github.com/dabeschte/npybvh to the JS.
  * @author Nikola Lukic
+ * @license GPL-V3
  */
 
 function arraySum3(a, b) {
@@ -17,8 +18,8 @@ function deg2rad(degrees) {
 
 function npdeg2rad(degrees) {
   return [degrees[0] * (Math.PI / 180),
-  degrees[1] * (Math.PI / 180),
-  degrees[2] * (Math.PI / 180)];
+          degrees[1] * (Math.PI / 180),
+          degrees[2] * (Math.PI / 180)];
 }
 
 function rad2deg(radians) {
@@ -209,22 +210,21 @@ function mat2euler(M, rad2deg_flag) {
     yaw = 0;
     if(M[2][0] == -1) {
       pitch = Math.PI / 2;
-      roll = yaw + atan2(M[0][1], M[0][2]);
+      roll = yaw + Math.atan2(M[0][1], M[0][2]);
     } else {
       pitch = -Math.PI / 2;
-      roll = -1 * yaw + atan2(-1 * M[0][1], -1 * M[0][2]);
+      roll = -1 * yaw + Math.atan2(-1 * M[0][1], -1 * M[0][2]);
     }
   }
 
-  if(typeof rad2deg_flag !== undefined) {
+  if (typeof rad2deg_flag !== "undefined") {
     // convert from radians to degrees
-    roll = roll * 180 / Math.PI;
-    pitch = pitch * 180 / Math.PI;
-    yaw = yaw * 180 / Math.PI;
+    roll = (roll * 180) / Math.PI;
+    pitch = (pitch * 180) / Math.PI;
+    yaw = (yaw * 180) / Math.PI;
   }
 
-  var rez = [roll, pitch, yaw];
-  return rez;
+  return [roll, pitch, yaw];
 }
 
 class MEBvhJoint {
@@ -252,7 +252,6 @@ class MEBvhJoint {
   }
 
   position_animated() {
-    // true or false
     var detFlag = false;
     for(const item in this.channels) {
       if(this.channels[item].endsWith("position") == true) {
@@ -280,37 +279,33 @@ class MEBvh {
     this.keyframes = null;
     this.frames = 0;
     this.fps = 0;
-
     this.myName = "MATRIX-ENGINE-BVH";
   }
 
   async parse_file(link) {
-
-    // var link ="example.bvh";
-    // var link = "https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-BVH-test/main/javascript-bvh/example.bvh";
-
     return new Promise((resolve, reject) => {
       fetch(link).then(event => {
         event.text().then(text => {
+
           var hierarchy = text.split("MOTION")[0];
           var motion = text.split("MOTION")[1];
-          // console.log("Test split MOTION hierarchy part-> ", hierarchy);
-          // console.log("Test split MOTION motion part -> ", motion);
-          // console.log("Test scope -> ", this.myName);
+
           var newLog = document.createElement("div");
           newLog.innerHTML += '<h2>Hierarchy</h2>';
           newLog.innerHTML += '<p>' + hierarchy + '</p>';
-          byId('log').appendChild(newLog);
-
           var newLog2 = document.createElement("span");
           newLog2.innerHTML += '<h2>Motion</h2>';
           newLog2.innerHTML += '<p class="paragraf fixHeight" >' + motion + '</p>';
-          byId('log').appendChild(newLog2);
+
+          if (typeof byId('log') != undefined) {
+            byId('log').appendChild(newLog2);
+            byId('log').appendChild(newLog);
+          }
 
           this._parse_hierarchy(hierarchy);
           this.parse_motion(motion);
 
-          setTimeout( resolve, 100 )
+          resolve();
         });
       });
     });
@@ -419,7 +414,6 @@ class MEBvh {
     var frame = 0;
     for(var key in lines) {
       var line = lines[key];
-      // console.log("Test parse_motion LINE  -> ", line);
       if(line == "") {continue;}
       var words = line.split(/\s+/);
       if(line.startsWith("Frame Time:")) {
@@ -446,8 +440,7 @@ class MEBvh {
 
   _extract_rotation(frame_pose, index_offset, joint) {
     var local_rotation = [0, 0, 0],
-      M_rotation;
-    //console.log("before all local_rotation ", local_rotation)
+        M_rotation;
 
     for(var key in joint.channels) {
       var channel = joint.channels[key];
@@ -497,9 +490,7 @@ class MEBvh {
 
       var M_channel = euler2mat(euler_rot[0], euler_rot[1], euler_rot[2], euler_rot[3])
       var M_rotation = multiply(M_rotation, M_channel);
-      // console.log("FINAL M_rotation   ->", M_rotation);
-      // return M_rotation, index_offset
-      
+
     }
     return [M_rotation, index_offset];
   }
@@ -553,18 +544,12 @@ class MEBvh {
       for(var item in this.joints) {
 
         if(joint.name == item) {
-          // console.log(">>>>(joint.channels.length == 0) >GOOD>>", item, " local2 .>>>>>", local2)
           joint_index = local2;
         }
         local2++;
       }
 
-      // joint_index = list(this.joints.values()).index(joint); ORI
-      // console.log(p_parent + " p_parent")
-      // dot3vs1
       p[joint_index] = arraySum3(p_parent, dot3vs1(M_parent, joint.offset));
-      // console.log(" TEST TEST p[joint_index]  ", p[joint_index] )
-
       r[joint_index] = mat2euler(M_parent);
       return index_offset;
     }
@@ -581,45 +566,17 @@ class MEBvh {
       ];
     }
 
-    // multiply
-    /* Normal flow
-    joint.offset -> [-0.01683  1.81591  0.07903]
-    M_parent -> [[ 1.          0.          0.        ]
-                [ 0.          0.9612617   0.27563736]
-                [ 0.         -0.27563736  0.9612617 ]]
-    M_parent.dot(M_rotation) -> [[ 1.          0.          0.        ]
-                                [ 0.          0.9961947  -0.08715574]
-                                [ 0.          0.08715574  0.9961947 ]]
-     offset_position -> [0. 0. 0.]
-
-     
-   */
-
-    console.log(joint.name + "<<<<<<<<<<<<<joint.name<<<<<<<<<<<<<")
-    console.log(M_parent + "<<<<<<<<<<<<<M_parent<<<<<<<<<<<<<",  Array.isArray(M_parent))
-    console.log(M_rotation + "<<<<<<<<<<<<<M_rotation<<<<<<<<<<<<<",  Array.isArray(M_rotation))
     var M = multiply(M_parent, M_rotation);
-    console.log("<<<<<<<<<<<<<M <<<<>", M)
-
     // https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:adding-and-subtracting-matrices/e/matrix_addition_and_subtraction
-
-    //console.log( joint.offset + "<<<<<<<<<<<<<joint_index<<<<<<<<<<<<<" , Array.isArray(joint.offset))
-    //console.log(M_parent+ "<<<<<<<<<<<<<M_parent<<<<<<<<<<<< M_parent.length  is ARRAY" ,  Array.isArray(M_parent))
-    //console.log(p_parent + "<<<<<<<<<<<<<p_parent<<<<<<<<<<<<<",  Array.isArray(p_parent))
-    //console.log(offset_position + "<<<<<<<<<<<<<offset_position<<<<<<<<<<<<<",  Array.isArray(offset_position))
 
     var position = arraySum3(p_parent, dot3vs1(M_parent, joint.offset));
     position = arraySum3(position, offset_position);
-
-    console.log(position + "<<<<<<<<<<<<<position<<<<<<<<<<<<<")
-    // rotation = rad2deg(mat2euler(M));
     var rotation = mat2euler(M, "rad2deg");
 
     // just find by id
     var local = 0;
     for(const item in this.joints) {
       if(joint.name == item) {
-        // console.log(item, "  index => ", local);
         joint_index = local;
       }
       local++;
@@ -644,13 +601,10 @@ class MEBvh {
   }
 
   frame_pose(frame) {
-
     var jointLength = 0;
     for(var x in this.joints) {jointLength++}
     var p = Array.from(Array(jointLength), () => [0, 0, 0]);
     var r = Array.from(Array(jointLength), () => [0, 0, 0]);
-    // var p = np.empty((this.joints.length, 3));
-    // var r = np.empty((this.joints.length, 3));
     var frame_pose = this.keyframes[frame];
     var M_parent = [
       [0, 0, 0],
@@ -662,8 +616,6 @@ class MEBvh {
     M_parent[1][1] = 1;
     M_parent[2][2] = 1;
 
-    // console.log(">>>>>>>>>>>>>>>>>>>>>>>>> p ", p);
-
     this._recursive_apply_frame(
       this.root,
       frame_pose,
@@ -674,28 +626,18 @@ class MEBvh {
       [0, 0, 0]
     );
 
-    // console.log(">>>>>>>>>>>>>>>>>AFTER>>>>>>>> p ", p);
-
     return [p, r];
   }
 
   all_frame_poses() {
-    //  Array.from(Array(this.joints.length), () => new Array(3));
-    // what is -> p len ,  >>>>>>> 75
-    // what is -> p len of [o] ,  >>>>>>> 38
-    // what is -> p len of [o][0] ,  >>>>>>> 3
+
     var jointLength = 0;
     for(var x in this.joints) {jointLength++}
-    console.log("ALL FRAME POSES -. jointLength ", jointLength)
-    // p = np.empty((this.frames, this.joints.length, 3));
     var p = Array.from({length: this.frames}, () => Array.from({length: jointLength}, () => [0, 0, 0]));
-    // r = np.empty((this.frames, this.joints.length, 3));
     var r = Array.from({length: this.frames}, () => Array.from({length: jointLength}, () => [0, 0, 0]));
 
     for(var frame = 0;frame < this.keyframes.length;frame++) {
-
       var local3 = this.frame_pose(frame);
-      // console.log(local3[0] + "<<<<<<<<<<this.frame_pose(frame)  <<")
       p[frame] = local3[0];
       r[frame] = local3[1];
     }
@@ -704,31 +646,30 @@ class MEBvh {
   }
 
   _plot_pose(p, r, fig, ax) {
-    /* 
-        _plot_pose(p, r, fig=None, ax=None) {
-          import matplotlib.pyplot as plt
-          from mpl_toolkits.mplot3d import axes3d, Axes3D
-        if fig is None:
-            fig = plt.figure()
-        if ax is None:
-            ax = fig.add_subplot(111, projection='3d')
-    
-        ax.cla()
-        ax.scatter(p[:, 0], p[:, 2], p[:, 1])
-        ax.set_xlim(-30, 30)
-        ax.set_ylim(-30, 30)
-        ax.set_zlim(-1, 59)
-    
-        plt.draw()
-        plt.pause(0.001)
-        */
+  /* 
+    _plot_pose(p, r, fig=None, ax=None) {
+      import matplotlib.pyplot as plt
+      from mpl_toolkits.mplot3d import axes3d, Axes3D
+    if fig is None:
+        fig = plt.figure()
+    if ax is None:
+        ax = fig.add_subplot(111, projection='3d')
+    ax.cla()
+    ax.scatter(p[:, 0], p[:, 2], p[:, 1])
+    ax.set_xlim(-30, 30)
+    ax.set_ylim(-30, 30)
+    ax.set_zlim(-1, 59)
+    plt.draw()
+    plt.pause(0.001)
+  */
   }
 
+  // Meybe helps for draw
   // plot_frame(frame, fig=None, ax=None) {
   plot_frame(frame, fig, ax) {
     // ????
-    p, (r = this.frame_pose(frame));
-    this._plot_pose(p, r, fig, ax);
+    // p, (r = this.frame_pose(frame));
+    // this._plot_pose(p, r, fig, ax);
   }
 
   joint_names() {
@@ -741,19 +682,18 @@ class MEBvh {
 
   plot_all_frames() {
     /*
-        import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import axes3d, Axes3D
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        for i in range(self.frames) {
-            self.plot_frame(i, fig, ax);
-        } 
-        */
+      import matplotlib.pyplot as plt
+      from mpl_toolkits.mplot3d import axes3d, Axes3D
+      fig = plt.figure()
+      ax = fig.add_subplot(111, projection='3d')
+      for i in range(self.frames) {
+          self.plot_frame(i, fig, ax);
+      } 
+    */
   }
 
   __repr__() {
-    // return f"BVH {len(self.joints.keys())} joints, {self.frames} frames";
-    return `BVH ${this.joints.keys().length} joints, ${this.frames} frames`;
+    return `BVH.JS ${this.joints.keys().length} joints, ${this.frames} frames`;
   }
 }
 
@@ -764,13 +704,9 @@ var anim = new MEBvh();
 anim.parse_file("https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-BVH-test/main/javascript-bvh/example.bvh").then(() => {
 
   console.info("plot_hierarchy no function")
-  anim.plot_hierarchy();
+  // anim.plot_hierarchy();
 
   var r = anim.frame_pose(0);
-
-  // console.log("FINAL P => ", r[0].length)
-  // console.log("FINAL R => ", r[1].length)
-
   // console.log("FINAL P => ", r[0])
   // console.log("FINAL R => ", r[1])
 
@@ -779,10 +715,9 @@ anim.parse_file("https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-B
 
   var KEYS = anim.joint_names();
   for(var x = 0;x < r[0].length;x++) {
-    
     newLog.innerHTML += '<p>' + "->" + KEYS[x] + "-> position: " + r[0][x] + " rotation: " + r[1][x] + '</p>';
     byId('log').appendChild(newLog);
-    console.log("->" + KEYS[x] + "-> position: " + r[0][x] + " rotation: " + r[1][x]);
+    console.info(KEYS[x] + " -> position: " + r[0][x] + " rotation: " + r[1][x]);
   }
 
   // var all = anim.all_frame_poses();
@@ -790,6 +725,3 @@ anim.parse_file("https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-B
   // all_p, all_r = anim.all_frame_poses()
 
 });
-
-// extract single frame pose: axis0=joint, axis1=positionXYZ/rotationXYZ
-// p, r = anim.frame_pose(0);

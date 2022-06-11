@@ -1,7 +1,7 @@
 {
   "name": "bvh-loader",
   "version": "0.0.6",
-  "description": "BVH Loader. WIP 95%",
+  "description": "BVH Loader. Stable version",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

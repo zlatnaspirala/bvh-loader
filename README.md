@@ -2,16 +2,13 @@
 # bvh-loader.js
 # 
 
-### Objective 1 [90% DONE] ☕
+### Objective 1 [100% DONE] ☕
 
-bvh.py to bvh.js 
+bvh.py to bvh.js
 
 Prepare BVH Loader only data aspect for matrix-engine.
 
-Prepare npm package.
-
- TODO:
- - fix for _end joint position maybe rotation return data.
+Npm package link -> 
 
 
 ### Objective 2

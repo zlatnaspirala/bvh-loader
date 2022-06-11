@@ -14,15 +14,17 @@ anim.parse_file("https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-B
 
   var r = anim.frame_pose(0);
 
-  console.log("FINAL P => ", r[0].length)
-  console.log("FINAL R => ", r[1].length)
+  var newLog = document.createElement("div");
+  newLog.innerHTML += '<h2>PRINT POSITION AND ROTATION </h2>';
 
   var KEYS = anim.joint_names();
   for(var x = 0;x < r[0].length;x++) {
-    console.log("->" + KEYS[x] + "-> position: " + r[0][x] + " rotation: " + r[1][x]);
+    newLog.innerHTML += '<p>' + "->" + KEYS[x] + "-> position: " + r[0][x] + " rotation: " + r[1][x] + '</p>';
+    byId('log').appendChild(newLog);
+    console.info(KEYS[x] + " -> position: " + r[0][x] + " rotation: " + r[1][x]);
   }
 
-  var all = anim.all_frame_poses();
-  console.log("Final All -> ", all);
+  // var all = anim.all_frame_poses();
+  // console.log("Final All -> ", all);
 
 });
