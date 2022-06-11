@@ -1,19 +1,17 @@
 
 # bvh-loader.js
-# 
 
-### Objective 1 [100% DONE] ☕
 
-bvh.py to bvh.js
+### Objective 1 [100% DONE]
+### bvh.py to bvh.js ☕
 
-Prepare BVH Loader only data aspect for matrix-engine.
 
-Npm package link -> 
+### Npm package link:
+https://www.npmjs.com/package/bvh-loader
 
 
 ### Objective 2
-Implement loader intro matrix-engine. 🤞
-
+Implement loader/draws intro matrix-engine. 🤞
 Make pseudo (primitives) Skeletal Mesh and adapt it to the bvh loader output data.🤞
 
 
@@ -28,8 +26,8 @@ Make pseudo (primitives) Skeletal Mesh and adapt it to the bvh loader output dat
 ├── module/          [module JS - npm]
 |   ├── bvh-loader.js
 ├── index.js
-├── test.js
-├── module.html      [test module local or public]
+├── test.js          [test module]
+├── module.html      [test module]
 ├── package.json
 ├── LINCENCE
 ├── README.md
