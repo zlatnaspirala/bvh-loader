@@ -38,9 +38,9 @@ function dot3vs1(a, b) {
     bNumRows == 3) {
     for(var j = 0;j < a.length;j++) {
       // First root of 3x3 a.
-      REZ1 += a[j][0] * b[j];
-      REZ2 += a[j][1] * b[j];
-      REZ3 += a[j][2] * b[j];
+      REZ1 += a[0][j] * b[j];
+      REZ2 += a[1][j] * b[j];
+      REZ3 += a[2][j] * b[j];
     }
     var finalRez = [REZ1, REZ2, REZ3];
     return finalRez;
@@ -438,7 +438,6 @@ class MEBvh {
 
       for(var angle_index = 0;angle_index < words.length;angle_index++) {
         this.keyframes[frame][angle_index] = parseFloat(words[angle_index]);
-        // console.log(" localArr >>>>>>>>>>>>>", this.keyframes[0]);
       }
 
       frame += 1;
@@ -448,6 +447,7 @@ class MEBvh {
   _extract_rotation(frame_pose, index_offset, joint) {
     var local_rotation = [0, 0, 0],
       M_rotation;
+    //console.log("before all local_rotation ", local_rotation)
 
     for(var key in joint.channels) {
       var channel = joint.channels[key];
@@ -476,23 +476,16 @@ class MEBvh {
       [0, 0, 1],
     ];
 
-    // np.eye(3);
-    /*
-            [[1. 0. 0.]
-            [0. 1. 0.]
-            [0. 0. 1.]]
-        */
-
     for(key in joint.channels) {
-      var channel = joint.channels[key];
 
+      var channel = joint.channels[key];
       if(channel.endsWith("position")) {
         continue;
       }
 
       var euler_rot;
       if(channel == "Xrotation") {
-        console.warn("local_rotation " + local_rotation);
+        // console.warn("local_rotation " + local_rotation);
         euler_rot = [local_rotation[0], 0., 0.];
       } else if(channel == "Yrotation") {
         euler_rot = [0., local_rotation[1], 0.];
@@ -502,19 +495,13 @@ class MEBvh {
         console.warn("Unknown channel {channel}");
       }
 
-      //   console.log(">>>>>>euler_rot>>>>>>>", euler_rot);
-      // ?????????????????
       var M_channel = euler2mat(euler_rot[0], euler_rot[1], euler_rot[2], euler_rot[3])
-
       var M_rotation = multiply(M_rotation, M_channel);
-
-      // console.log(">>>>>>M_rotation>>>>>>>", M_rotation);
-      // console.log(">>>>>>M_channel>>>>>>>", M_channel[2]);
-
-
+      // console.log("FINAL M_rotation   ->", M_rotation);
       // return M_rotation, index_offset
-      return [M_rotation, index_offset];
+      
     }
+    return [M_rotation, index_offset];
   }
 
   _extract_position(joint, frame_pose, index_offset) {
@@ -604,9 +591,15 @@ class MEBvh {
                                 [ 0.          0.9961947  -0.08715574]
                                 [ 0.          0.08715574  0.9961947 ]]
      offset_position -> [0. 0. 0.]
+
+     
    */
 
+    console.log(joint.name + "<<<<<<<<<<<<<joint.name<<<<<<<<<<<<<")
+    console.log(M_parent + "<<<<<<<<<<<<<M_parent<<<<<<<<<<<<<",  Array.isArray(M_parent))
+    console.log(M_rotation + "<<<<<<<<<<<<<M_rotation<<<<<<<<<<<<<",  Array.isArray(M_rotation))
     var M = multiply(M_parent, M_rotation);
+    console.log("<<<<<<<<<<<<<M <<<<>", M)
 
     // https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:adding-and-subtracting-matrices/e/matrix_addition_and_subtraction
 
@@ -618,13 +611,11 @@ class MEBvh {
     var position = arraySum3(p_parent, dot3vs1(M_parent, joint.offset));
     position = arraySum3(position, offset_position);
 
-    // console.log(position + "<<<<<<<<<<<<<position<<<<<<<<<<<<<")
+    console.log(position + "<<<<<<<<<<<<<position<<<<<<<<<<<<<")
     // rotation = rad2deg(mat2euler(M));
     var rotation = mat2euler(M, "rad2deg");
 
-    //////////////
     // just find by id
-    // joint_index = list(this.joints.values()).index(joint); ORIGINAL
     var local = 0;
     for(const item in this.joints) {
       if(joint.name == item) {
@@ -633,8 +624,7 @@ class MEBvh {
       }
       local++;
     }
-    // console.log(joint_index + "<<<<<<<<<<<<<joint_index<<<<<<<<<<<<<")
-    /////////////
+
     p[joint_index] = position;
     r[joint_index] = rotation;
 
@@ -778,11 +768,11 @@ anim.parse_file("https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-B
 
   var r = anim.frame_pose(0);
 
-  console.log("FINAL P => ", r[0].length)
-  console.log("FINAL R => ", r[1].length)
+  // console.log("FINAL P => ", r[0].length)
+  // console.log("FINAL R => ", r[1].length)
 
-  console.log("FINAL P => ", r[0])
-  console.log("FINAL R => ", r[1])
+  // console.log("FINAL P => ", r[0])
+  // console.log("FINAL R => ", r[1])
 
   var newLog = document.createElement("div");
     newLog.innerHTML += '<h2>PRINT POSITION AND ROTATION </h2>';
@@ -795,8 +785,8 @@ anim.parse_file("https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-B
     console.log("->" + KEYS[x] + "-> position: " + r[0][x] + " rotation: " + r[1][x]);
   }
 
-  var all = anim.all_frame_poses();
-  console.log("Final All -> ", all);
+  // var all = anim.all_frame_poses();
+  // console.log("Final All -> ", all);
   // all_p, all_r = anim.all_frame_poses()
 
 });
