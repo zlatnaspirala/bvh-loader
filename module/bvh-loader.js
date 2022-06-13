@@ -297,7 +297,7 @@ export class MEBvh {
           newLog2.innerHTML += '<h2>Motion</h2>';
           newLog2.innerHTML += '<p class="paragraf fixHeight" >' + motion + '</p>';
 
-          if (typeof byId('log') != 'undefined') {
+          if (byId && byId('log') !== null) {
             byId('log').appendChild(newLog2);
             byId('log').appendChild(newLog);
           }
