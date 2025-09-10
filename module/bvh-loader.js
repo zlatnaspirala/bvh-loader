@@ -4,8 +4,9 @@
  * @author Nikola Lukic
  * @license GPL-V3
  */
+export function degToRad(degrees) {return (degrees * Math.PI) / 180};
 
- function arraySum3(a, b) {
+function arraySum3(a, b) {
   var rez1 = a[0] + b[0];
   var rez2 = a[1] + b[1];
   var rez3 = a[2] + b[2];
@@ -18,8 +19,8 @@ function deg2rad(degrees) {
 
 function npdeg2rad(degrees) {
   return [degrees[0] * (Math.PI / 180),
-          degrees[1] * (Math.PI / 180),
-          degrees[2] * (Math.PI / 180)];
+  degrees[1] * (Math.PI / 180),
+  degrees[2] * (Math.PI / 180)];
 }
 
 function rad2deg(radians) {
@@ -217,7 +218,7 @@ export function mat2euler(M, rad2deg_flag) {
     }
   }
 
-  if (typeof rad2deg_flag !== "undefined") {
+  if(typeof rad2deg_flag !== "undefined") {
     // convert from radians to degrees
     roll = (roll * 180) / Math.PI;
     pitch = (pitch * 180) / Math.PI;
@@ -270,6 +271,46 @@ export class MEBvhJoint {
     }
     return detFlag;
   }
+
+  createIdentityMatrix() {
+    // Returns a flat Float32Array of length 16 (column-major)
+    return new Float32Array([
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    ]);
+  }
+
+  matrixFromKeyframe(frameData) {
+    const m = this.createIdentityMatrix();
+    let t = [0, 0, 0];
+    let r = [0, 0, 0];
+
+    for(let i = 0;i < this.channels.length;i++) {
+      const channel = this.channels[i];
+      const value = frameData[this.channelOffset + i];
+      // channelOffset = index into frameData where this joint’s values start
+
+      switch(channel) {
+        case 'Xposition': t[0] = value; break;
+        case 'Yposition': t[1] = value; break;
+        case 'Zposition': t[2] = value; break;
+        case 'Xrotation': r[0] = degToRad(value); break;
+        case 'Yrotation': r[1] = degToRad(value); break;
+        case 'Zrotation': r[2] = degToRad(value); break;
+      }
+    }
+
+    // Apply translation
+    mat4.translate(m, t, m);
+    // Apply rotations in BVH order (important!)
+    mat4.rotateX(m, r[0], m);
+    mat4.rotateY(m, r[1], m);
+    mat4.rotateZ(m, r[2], m);
+
+    return m;
+  }
 }
 
 export class MEBvh {
@@ -297,7 +338,7 @@ export class MEBvh {
           newLog2.innerHTML += '<h2>Motion</h2>';
           newLog2.innerHTML += '<p class="paragraf fixHeight" >' + motion + '</p>';
 
-          if (byId && byId('log') !== null) {
+          if(byId && byId('log') !== null) {
             byId('log').appendChild(newLog2);
             byId('log').appendChild(newLog);
           }
@@ -372,9 +413,9 @@ export class MEBvh {
     newLog1.innerHTML += '<p>joint.offset    : ' + joint.offset + '</p>';
     newLog1.innerHTML += '<p>joint.children.length  : ' + joint.children.length + '</p>';
 
-    (joint.children.length != 0 ? newLog1.innerHTML += '<p> Childrens: ' : newLog1.innerHTML += 'No Childrens ' );
+    (joint.children.length != 0 ? newLog1.innerHTML += '<p> Childrens: ' : newLog1.innerHTML += 'No Childrens ');
     joint.children.forEach(iJoint => {
-        newLog1.innerHTML += ' ' + iJoint['name'] + ' , ';
+      newLog1.innerHTML += ' ' + iJoint['name'] + ' , ';
     });
     newLog1.innerHTML += '</p>';
 
@@ -440,7 +481,7 @@ export class MEBvh {
 
   _extract_rotation(frame_pose, index_offset, joint) {
     var local_rotation = [0, 0, 0],
-        M_rotation;
+      M_rotation;
 
     for(var key in joint.channels) {
       var channel = joint.channels[key];
@@ -646,22 +687,22 @@ export class MEBvh {
   }
 
   _plot_pose(p, r, fig, ax) {
-  /* 
-    _plot_pose(p, r, fig=None, ax=None) {
-      import matplotlib.pyplot as plt
-      from mpl_toolkits.mplot3d import axes3d, Axes3D
-    if fig is None:
-        fig = plt.figure()
-    if ax is None:
-        ax = fig.add_subplot(111, projection='3d')
-    ax.cla()
-    ax.scatter(p[:, 0], p[:, 2], p[:, 1])
-    ax.set_xlim(-30, 30)
-    ax.set_ylim(-30, 30)
-    ax.set_zlim(-1, 59)
-    plt.draw()
-    plt.pause(0.001)
-  */
+    /* 
+      _plot_pose(p, r, fig=None, ax=None) {
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import axes3d, Axes3D
+      if fig is None:
+          fig = plt.figure()
+      if ax is None:
+          ax = fig.add_subplot(111, projection='3d')
+      ax.cla()
+      ax.scatter(p[:, 0], p[:, 2], p[:, 1])
+      ax.set_xlim(-30, 30)
+      ax.set_ylim(-30, 30)
+      ax.set_zlim(-1, 59)
+      plt.draw()
+      plt.pause(0.001)
+    */
   }
 
   // Meybe helps for draw

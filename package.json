@@ -1,6 +1,6 @@
 {
   "name": "bvh-loader",
-  "version": "0.0.9",
+  "version": "1.0.4",
   "description": "BVH Loader. Stable version",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,10 @@
   "keywords": [
     "bvh", "bvh-loader",
     "loader", "bvh-glmatrix",
-    "bvh-js", "bvh.py"
+    "bvh-js", "bvh.py",
+    "bvh-webgpu", "matrix-engine-bvh",
+    "bvh-raw-loader", "javascript",
+    "bvh-animation"
   ],
   "author": "Nikola Lukic",
   "license": "GPL-3.0-or-later",

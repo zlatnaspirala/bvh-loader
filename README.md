@@ -10,9 +10,11 @@
 https://www.npmjs.com/package/bvh-loader
 
 
+
 ### Objective 2
-Implement loader/draws intro matrix-engine. 🤞
-Make pseudo (primitives) Skeletal Mesh and adapt it to the bvh loader output data.🤞
+
+Implement loader/draws intro matrix-engine-wgpu. 🤞
+Make pseudo (primitives) Skeletal Mesh and adapt it to the bvh loader output data. DONE
 
 
 ## Project structure
@@ -101,11 +103,20 @@ anim.parse_file("https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-B
 
 ```
 
+#### New features:
+ - 1.0.0 added matrixFromKeyframe intro class MEBvhJoint.
+
+Last version is in module folder [npm use last version].
+bvh loader now is adapted also for matrix-engine-webgpu.
+
+
 ### Lincence
 
 https://maximumroulette.com 
-
 GNU GENERAL PUBLIC LICENSE Version 3
+
+But only if you modify source of loader if you use it from npm no need to publish you code.
+Use it it is free...
 
 ### Credits
 
