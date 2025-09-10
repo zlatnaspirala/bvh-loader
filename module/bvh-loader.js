@@ -1,9 +1,11 @@
+import { mat4 } from 'webgpu-matrix';
 /**
  * @description Manual convert python script BVH
  * from https://github.com/dabeschte/npybvh to the JS.
  * @author Nikola Lukic
  * @license GPL-V3
  */
+
 export function degToRad(degrees) {return (degrees * Math.PI) / 180};
 
 function arraySum3(a, b) {

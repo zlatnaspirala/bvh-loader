@@ -109,8 +109,10 @@ anim.parse_file("https://raw.githubusercontent.com/zlatnaspirala/Matrix-Engine-B
 Last version is in module folder [npm use last version].
 bvh loader now is adapted also for matrix-engine-webgpu.
 
+I use webgpu-matrix npm package for `matrixFromKeyframe` used in matrix-engine-webgpu project for skinnedMesh glb import.
 
-### Lincence
+
+### Licence
 
 https://maximumroulette.com 
 GNU GENERAL PUBLIC LICENSE Version 3
